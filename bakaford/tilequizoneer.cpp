@@ -7,7 +7,7 @@
  * @Modules: {}                                                               *
  ******************************************************************************/
  
-#pragma once
+// #pragma once
 #pragma GCC optimize (2)
 
 #include <sstream>
@@ -15,13 +15,16 @@
 #include <iostream>
 namespace Bakaford {
 	class Graph {
-		public: std::vector<std::vector<signed>> edge;
+		public: std::vector<std::vector<signed int>> edge;
 		public: std::vector<bool> vertexflag;
+		public: std::vector<std::pair<signed int,signed int>> lineref;
 		public: int vertexamt;
 		public: Graph(void) = default;
 		public: Graph(int va): vertexamt(va) {
+			va++;
 			vertexflag.resize(va);
 			edge.resize(va);
+			lineref.resize(va);
 			for(auto& is:edge) {
 				is.resize(va);
 				for(auto& si:is) si = 0;
@@ -81,10 +84,17 @@ namespace Bakaford {
 		public: std::string exportquiz(void) {
 			int count = 0;
 			std::stringstream quiz("");
-			for(int a=0; a<vertexamt; a++){
-				for(int b=a+1; b<vertexamt; b++){
-					for(int c=b+1; c<vertexamt; c++){
-						for(int d=c+1; d<vertexamt; d++){
+			quiz << "Consider " << vertexamt/2 << " free points and " << vertexamt/2 << " lines on a projective plane,\n";
+			quiz << "Denote \n";
+			
+			for(int i=0; i<vertexamt; i+=2) {
+				quiz << "  l" << i << ":=(v" << lineref[i].first << "v" << lineref[i].second << "); \n";
+			}
+			quiz << "Then \n";
+			for(int a=0; a<vertexamt; a++) {
+				for(int b=a+1; b<vertexamt; b++) {
+					for(int c=b+1; c<vertexamt; c++) {
+						for(int d=c+1; d<vertexamt; d++) {
 							bool ring1 = (edge[a][b] && edge[b][c] && edge[c][d] && edge[d][a]);
 							bool ring2 = (edge[a][b] && edge[b][d] && edge[d][c] && edge[c][a]);
 							bool ring3 = (edge[a][c] && edge[c][b] && edge[b][d] && edge[d][a]);
@@ -92,56 +102,26 @@ namespace Bakaford {
 							bool istiling2 = !vertexflag[a] && vertexflag[b] && !vertexflag[c] && vertexflag[d];
 							
 							if((ring1 || ring2 || ring3) && (istiling1 || istiling2)) {
-								count++;
-								if(vertexflag[a]) std::cout << "{v" << a << ", v" << c << ", l" << b << "^l" << d << "} are conlinear.\n";
-								else	          std::cout << "{v" << b << ", v" << d << ", l" << a << "^l" << c << "} are conlinear.\n";
-
-								
+								count++;								
 								// [Master Theorem] If all of the tilings except t0 have conlinear conditions, then t0 has the conlinear condition too.
 								//   Then name the quiz in a format.
+								if(vertexflag[a]) quiz << count << ") {v" << a << ", v" << c << ", l" << b << "^l" << d << "} are conlinear.\n";
+								else	          quiz << count << ") {v" << b << ", v" << d << ", l" << a << "^l" << c << "} are conlinear.\n";
 							}
 						}
 					}
 				}
 			}
+			quiz << "If all conditions but one exist, then the remaining one does as well.";
 			return quiz.str();
-		}
-		
-		public: void shrink(void) {  // Delete isolated edges.
-			for(int a=0; a<vertexamt; a++){
-				for(int b=a+1; b<vertexamt; b++){
-					for(int c=b+1; c<vertexamt; c++){
-						for(int d=c+1; d<vertexamt; d++){
-							bool ring1 = (edge[a][b] && edge[b][c] && edge[c][d] && edge[d][a]);
-							bool ring2 = (edge[a][b] && edge[b][d] && edge[d][c] && edge[c][a]);
-							bool ring3 = (edge[a][c] && edge[c][b] && edge[b][d] && edge[d][a]);
-							bool istiling1 = vertexflag[a] && !vertexflag[b] && vertexflag[c] && !vertexflag[d];
-							bool istiling2 = !vertexflag[a] && vertexflag[b] && !vertexflag[c] && vertexflag[d];
-							
-							if((ring1 || ring2 || ring3) && (istiling1 || istiling2)) {
-								edge[a][b]++, edge[b][a]++;
-								edge[b][c]++, edge[c][b]++;
-								edge[c][d]++, edge[d][c]++;
-								edge[d][a]++, edge[a][d]++;
-							}
-						}
-					}
-				}
-			}
-			for(auto &is: edge) {
-				for(auto &si: is) {
-					if(si==1) si=0;
-					// else 	  si=1;
-				}
-			}
-			return ;
 		}
 	};
 }
 
 
 int main(void) {
-	const int volume = 12, rho=7;
+	const int volume = 9;
+	const float rho=3;
 	Bakaford::Graph g(volume);
 	srand (time(0));
 	
@@ -149,22 +129,28 @@ int main(void) {
 	for(int i = 0; i < volume; i++) {
 		if(i%2) g.vertexflag[i]=1;
 		else    g.vertexflag[i]=0;
+		int s0=0, s1=0;
+		while(s0==s1)
+			s0 = rand()%(volume/2)+1, s1 = rand()%(volume/2)+1;
+		g.lineref[i]=std::make_pair(s0,s1);
 	}
 
-	for(int epc=0; g.findtilings()<=std::max(epc,3) && epc<=(rho/10.f)*volume; epc++) {
-		int v0=0, v1=0, l0=0, l1=0;
-		while(v0==v1||l0==l1) {
-			v0 = rand()%(volume/2);
-			v1 = rand()%(volume/2);
-			l0 = rand()%(volume/2)+1;
-			l1 = rand()%(volume/2)+1;
+	for(int epc=0; g.findtilings()<=std::max(epc,3) && epc<=rho*volume; epc++) {
+		int v0idx=0, v1idx=0, l0idx=0, l1idx=0;
+		while(v0idx==v1idx||l0idx==l1idx) {
+			v0idx = rand()%(volume/2);
+			v1idx = rand()%(volume/2);
+			l0idx = rand()%(volume/2)+1;
+			l1idx = rand()%(volume/2)+1;
+			bool taut0=(g.lineref[l0idx].first==v0idx&&g.lineref[l0idx].second==v1idx)||(g.lineref[l0idx].first==v1idx&&g.lineref[l0idx].second==v0idx);
+			bool taut1=(g.lineref[l1idx].first==v0idx&&g.lineref[l1idx].second==v1idx)||(g.lineref[l1idx].first==v1idx&&g.lineref[l1idx].second==v0idx);
+			if(!taut0&&!taut1) continue;
 		}
-		g.addtiling(v0,l0,v1,l1);
+		g.addtiling(v0idx,l0idx,v1idx,l1idx);
 	}
 
-	g.shrink();
 	g.print();
-	g.exportquiz();
+	std::cout << g.exportquiz() << "\n";
 
 	return 0;
 }
