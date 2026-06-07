@@ -1,9 +1,8 @@
 /******************************************************************************
- * Bakaford/tilequizon: An automatic quiz naming formulator                   *
+ * Bakaford/tilequizoneer: An automatic incidence geoquiz formulator          *
  * @Author: classzheng@github                                                 *
  * @Date: 2026.5.30 (latest upd)                                              *
- * @Description: A automatic quiz naming formulator                           *
- *				  Ref: Incidences and Tilings [arXiv]						  *
+ * @Description: Ref. Incidences and Tilings [arXiv]						  *
  * @Modules: {}                                                               *
  ******************************************************************************/
  
@@ -120,8 +119,8 @@ namespace Bakaford {
 
 
 int main(void) {
-	const int volume = 9;
-	const float rho=3;
+	const int volume = 12;
+	const float rho=0.7;
 	Bakaford::Graph g(volume);
 	srand (time(0));
 	
@@ -131,8 +130,8 @@ int main(void) {
 		else    g.vertexflag[i]=0;
 		int s0=0, s1=0;
 		while(s0==s1)
-			s0 = rand()%(volume/2)+1, s1 = rand()%(volume/2)+1;
-		g.lineref[i]=std::make_pair(s0,s1);
+			s0 = (((rand()%volume)>>1)<<1)+1, s1 = (((rand()%volume)>>1)<<1)+1;
+		if(i%2==0) g.lineref[i]=std::make_pair(s0,s1);
 	}
 
 	for(int epc=0; g.findtilings()<=std::max(epc,3) && epc<=rho*volume; epc++) {
@@ -149,7 +148,7 @@ int main(void) {
 		g.addtiling(v0idx,l0idx,v1idx,l1idx);
 	}
 
-	g.print();
+	// g.print();
 	std::cout << g.exportquiz() << "\n";
 
 	return 0;
