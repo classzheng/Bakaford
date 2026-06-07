@@ -148,7 +148,7 @@ int main(void) {
 		g.addtiling(v0idx,l0idx,v1idx,l1idx);
 	}
 
-	// g.print();
+	g.print();
 	std::cout << g.exportquiz() << "\n";
 
 	return 0;
