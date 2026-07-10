@@ -102,7 +102,7 @@ class Resolver {
         Clause result(newlits);
         if(result.taut) return -1;
         for (auto& cl : axioms) if (cl.subset(result)) return -1;
-        std::cout << "{" << cl1.literal() << "&" << cl2.literal() << "} :- " << result.literal() << ".\n";
+        std::cout << "{" << cl1.literal() << ", " << cl2.literal() << "} :- " << result.literal() << ".\n";
         add(result);
         return axioms.size() - 1;
     }
@@ -120,6 +120,11 @@ class Resolver {
         }
         return -1;
     }
+    public: void dump(void) {
+    	for(auto& is:axioms) {
+    		std::cout << is.literal() << "\n";
+    	}
+    }
 };
 int main(void) {
     Resolver solver;
@@ -127,6 +132,7 @@ int main(void) {
     solver.add(Clause({-1,3})); // ~x1 v x3
     solver.add(Clause({-2,3})); // ~x2 v x3
     solver.add(Clause({-3}));   // ~x3
-    std::cout << (solver.run(1) == -1 ? 0 : 1);
+    solver.dump();
+    std::cout << (solver.run(3) == -1 ? 0 : 1);
 	return 0;
 }
