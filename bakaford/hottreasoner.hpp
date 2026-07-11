@@ -34,17 +34,27 @@ namespace Bakaford {
 	};
 	class Element;
 	class Autoptr {
+		public: bool hascleared=false;
 		public: std::vector<Element*> table;
 		public: Autoptr(void) = default;
 		public: ~Autoptr(void) {
-			for(auto&is:table) delete is;
-		}
-		public: inline void push(Element* e) { table.push_back(e); }
-		public: inline void clear(void) {
+			if(hascleared) return ;
 			for (auto p : table) {
-				delete p;
+				if(p!=nullptr) delete p, p=nullptr;
 			}
 			table.clear();
+			hascleared=true;
+			return ;
+		}
+		public: inline void push(Element* e) { table.push_back(e); }
+		public: void clear(void) {
+			if(hascleared) return ;
+			for (auto p : table) {
+				if(p!=nullptr) delete p, p=nullptr;
+			}
+			table.clear();
+			hascleared=true;
+			return ;
 		}
 	} mainpool;
 	class Element {
@@ -68,6 +78,7 @@ namespace Bakaford {
 					et(other.et) {
 			if (other.type != nullptr) {
 				type = new Element(other.type->var, nullptr);
+				// mainpool.push(type);
 			}
 		}
 		
@@ -82,6 +93,7 @@ namespace Bakaford {
 						type->var = other.type->var;
 					} else {
 						type = new Element(other.type->var, nullptr);
+						mainpool.push(type);
 					}
 				} else {
 					type = nullptr;
@@ -190,6 +202,8 @@ namespace Bakaford {
 			lambda.second = new Element(consequence);
 			lambda.first->et=Lambda;
 			lambda.second->et=Lambda;
+			mainpool.push(lambda.first);
+			mainpool.push(lambda.second);
 			return ;
 		}
 		
@@ -257,8 +271,11 @@ namespace Bakaford {
 		public: CartesianProduct(Element a, Element b): A(a), B(b) {};
 		public: ~CartesianProduct(void) = default;
 		
-		public: LambdaAbst Currying(void) {
-			return LambdaAbst(Element(A.var,&A),Element(B.var,&B));
+		public: Element Currying(void) {
+			// return LambdaAbst(Element(A.var,A.type),Element(B.var,B.type));
+			Element *temp=new Element(A.type->var+ARWCHAR+B.type->var,&Universe);
+			mainpool.push(temp);
+			return Element(A.var+ARWCHAR+B.var,temp);
 		}
 		
 		public: inline std::string literal(void) {
@@ -270,6 +287,8 @@ namespace Bakaford {
 			lit.et=CartproType;
 			lit.first = new Element(A);
 			lit.second = new Element(B);
+			mainpool.push(lit.first);
+			mainpool.push(lit.second);
 			return lit;
 		}
 		
@@ -279,6 +298,9 @@ namespace Bakaford {
 			con.et=CartesianPair;
 			con.first=new Element(*a);
 			con.second=new Element(*b);
+			mainpool.push(con.first);
+			mainpool.push(con.second);
+			mainpool.push(type);
 			return con;
 		};
 		
@@ -310,7 +332,7 @@ namespace Bakaford {
 		public: Element inductor(Element C, Element g, Element pair, unsigned markindex) {
 			Element A = *pair.first;
 			Element B = *pair.second;
-			std::string CdomStr = "(C_"+std::to_string(markindex)+":(" + A.var + "*" + B.var + ")"+ARWCHAR+"TypeUniverse)";
+			std::string CdomStr = "(C_"+std::to_string(markindex)+":(" + A.var + CRSCHAR + B.var + ")"+ARWCHAR+"TypeUniverse)";
 			Element CdomElem(CdomStr, &Universe,CustomType);
 			std::string gsig = "("+PICHAR+"_(a:" + A.var + ") ("+PICHAR+"_(b:" + B.var + ") C_"+std::to_string(markindex)+"(-)))";
 			std::string outsig = "(" + A.var + CRSCHAR + B.var + ARWCHAR + "C_"+std::to_string(markindex)+"(-))";
@@ -336,6 +358,8 @@ namespace Bakaford {
 			lit.et=CoproType;
 			lit.first = new Element(A);
 			lit.second = new Element(B);
+			mainpool.push(lit.first);
+			mainpool.push(lit.second);
 			return lit;
 		}
 		
@@ -345,6 +369,9 @@ namespace Bakaford {
 			con.et = CoproductPair;
 			con.first = &TypeZero;
 			con.second = new Element(*i);
+			mainpool.push(con.first);
+			mainpool.push(con.second);
+			mainpool.push(type);
 			return con;
 		}
 		
@@ -354,6 +381,9 @@ namespace Bakaford {
 			con.et = CoproductPair;
 			con.first = &TypeOne;
 			con.second = new Element(*i);
+			mainpool.push(con.first);
+			mainpool.push(con.second);
+			mainpool.push(type);
 			return con;
 		}
 	};
@@ -378,7 +408,7 @@ namespace Bakaford {
 			
 			Element arg = *lambda.first;
 			if (!appl.type || !arg.type) return nil;
-			if (!(*appl.type == *arg.type)) return nil;
+			// if (!(*appl.type == *arg.type)) return nil;  // 何意味
 			if (appl.et != Constant && appl.et != Variable) return nil;
 			
 			LambdaAbst func(*lambda.first, *lambda.second);
@@ -390,13 +420,14 @@ namespace Bakaford {
 		
 		std::pair<Element,Reference> currying(Element &cartprotype, unsigned markindex=0) {
 			std::pair<Element,Reference> nil=std::make_pair(NilType,Reference());
-			if (cartprotype.et != CartproType) return nil;
+			// if (cartprotype.et != CartproType) return nil;
 			if (!cartprotype.first || !cartprotype.second) return nil;
 			
 			CartesianProduct cart(*(cartprotype.first), *(cartprotype.second));
-			Element curried = cart.Currying().Abst();
+			// Element curried = cart.Currying().Abst();
+			Element curried = cart.Currying();
 			
-			return std::make_pair(curried,Reference(*cartprotype.first, curried));
+			return std::make_pair(curried,Reference());
 		}
 		
 		std::vector<Element> emplace(const Reference &ref, const std::vector<Element> gamma, unsigned markindex=0) {
@@ -473,7 +504,7 @@ namespace Bakaford {
 			CartesianProduct cart(*(v1.type), *(v2.type));
 			Element pair = cart.constructor(&v1, &v2);
 			
-			return std::make_pair(pair,Reference(cart(), pair));
+			return std::make_pair(pair,Reference());
 		}
 		
 		std::pair<Element,Reference>  coprocouple(Element &lv, Element &rv, bool cl, unsigned markindex=0) {
@@ -482,7 +513,7 @@ namespace Bakaford {
 			
 			DisjointCoproduct cop(*(lv.type), *(rv.type));
 			Element inj = cl ? cop.inl(&lv) : cop.inr(&rv);
-			return std::make_pair(inj,Reference(cop(), inj));
+			return std::make_pair(inj,Reference());
 		}
 	};
 
@@ -492,15 +523,27 @@ namespace Bakaford {
 		public: std::vector<Reference> ref;
 		public: unsigned index=0u;
 		public: Reasoner(void) = default;
-		public: ~Reasoner(void) = default;
+		public: ~Reasoner(void) {
+			mainpool.clear();
+			return ;
+		}
 		public: inline Reasoner& intro(Element &arg1) {
 			pool.push_back(arg1);
 			return (*this);
 		}
+		public: inline Reasoner& define(std::string v, Element *tp, ElementType t=Constant, Element *ref=nullptr) {
+			pool.push_back(Element(v,tp,t));
+			if(ref!=nullptr) ref=&(*this)(0);
+			return (*this);
+		}
+		public: inline Reasoner& define(const Element &arg1, const Element &arg2) {
+			ref.push_back(Reference(arg1,arg2));
+			return (*this);
+		}
 		public: Reasoner& abst(Element &arg1, Element &arg2) {
 			std::pair<Element,Element> dist=Handle::abstlambda(arg1,arg2);
-			pool.push_back(dist.first);
 			pool.push_back(dist.second);
+			pool.push_back(dist.first);
 			return (*this);
 		}
 		public: Reasoner& appl(Element &arg1, Element &arg2) {
@@ -512,7 +555,7 @@ namespace Bakaford {
 		public: Reasoner& currying(Element &arg1) {
 			std::pair<Element,Reference> dist=Handle::currying(arg1);
 			pool.push_back(dist.first);
-			ref.push_back(dist.second);
+			// ref.push_back(dist.second);
 			return (*this);
 		}
 		public: Reasoner& emplace(Reference &arg1) {
@@ -522,26 +565,30 @@ namespace Bakaford {
 		public: Reasoner& rec(Element &arg1) {
 			std::pair<Element,Reference> dist=Handle::recursion(arg1,index++);
 			pool.push_back(dist.first);
-			ref.push_back(dist.second);
+			// ref.push_back(dist.second);
 			return (*this);
 		}
 		public: Reasoner& ind(Element &arg1) {
 			std::pair<Element,Reference> dist=Handle::induction(arg1,index++);
 			pool.push_back(dist.first);
-			ref.push_back(dist.second);
+			// ref.push_back(dist.second);
 			return (*this);
 		}
 		public: Reasoner& make_pair(Element &arg1, Element &arg2) {
 			std::pair<Element,Reference> dist=Handle::cartcouple(arg1,arg2);
 			pool.push_back(dist.first);
-			ref.push_back(dist.second);
 			return (*this);
 		}
 		public: Reasoner& make_copair(Element &arg1, Element &arg2, const bool inz) {
 			std::pair<Element,Reference> dist=Handle::coprocouple(arg1,arg2,inz);
 			pool.push_back(dist.first);
-			ref.push_back(dist.second);
 			return (*this);
+		}
+		public: inline Element& operator() (const size_t& index) {
+			return pool[pool.size()-index-1];
+		}
+		public: inline Reference& operator[] (const size_t& index) {
+			return ref[ref.size()-index-1];
 		}
 	};
 }
