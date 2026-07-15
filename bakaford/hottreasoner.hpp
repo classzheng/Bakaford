@@ -389,10 +389,12 @@ namespace Bakaford {
 	};
 	
 	namespace Handle {
+	
+		std::pair<Element,Reference> nil=std::make_pair(NilType,Reference());
 		
 		std::pair<Element,Element> abstlambda(Element &A, Element &C, unsigned markindex=0) {
 			if (A.et != Variable) return std::make_pair(NilType,NilType);
-			if (C.et == CustomType) return std::make_pair(NilType,NilType);
+			if (C.et != Variable) return std::make_pair(NilType,NilType);
 			
 			LambdaAbst lab(A, C);
 			Element lambda = lab.Abst();
@@ -402,7 +404,6 @@ namespace Bakaford {
 		}
 		
 		std::pair<Element,Reference> appllambda(Element &lambda, Element &appl, unsigned markindex=0) {
-			std::pair<Element,Reference> nil=std::make_pair(NilType,Reference());
 			if (lambda.et != Lambda) return nil;
 			if (!lambda.first) return nil;
 			
@@ -419,7 +420,6 @@ namespace Bakaford {
 		}
 		
 		std::pair<Element,Reference> currying(Element &cartprotype, unsigned markindex=0) {
-			std::pair<Element,Reference> nil=std::make_pair(NilType,Reference());
 			// if (cartprotype.et != CartproType) return nil;
 			if (!cartprotype.first || !cartprotype.second) return nil;
 			
@@ -453,7 +453,6 @@ namespace Bakaford {
 		}
 		
 		std::pair<Element,Reference> recursion(Element &cartpair, unsigned markindex) {
-			std::pair<Element,Reference> nil=std::make_pair(NilType,Reference());
 			if (cartpair.et != CartesianPair) return nil;
 			if (!cartpair.first || !cartpair.second) return nil;
 			
@@ -469,7 +468,6 @@ namespace Bakaford {
 		}
 		
 		std::pair<Element,Reference> induction(Element &cartpair, unsigned markindex) {
-			std::pair<Element,Reference> nil=std::make_pair(NilType,Reference());
 			if (cartpair.et != CartesianPair) return nil;
 			if (!cartpair.first || !cartpair.second) return nil;
 			
@@ -498,7 +496,6 @@ namespace Bakaford {
 		}
 		
 		std::pair<Element,Reference> cartcouple(Element &v1, Element &v2, unsigned markindex=0) {
-			std::pair<Element,Reference> nil=std::make_pair(NilType,Reference());
 			if (!v1.type || !v2.type) return nil;
 			
 			CartesianProduct cart(*(v1.type), *(v2.type));
@@ -508,7 +505,6 @@ namespace Bakaford {
 		}
 		
 		std::pair<Element,Reference>  coprocouple(Element &lv, Element &rv, bool cl, unsigned markindex=0) {
-			std::pair<Element,Reference> nil=std::make_pair(NilType,Reference());
 			if (!lv.type || !rv.type) return nil;
 			
 			DisjointCoproduct cop(*(lv.type), *(rv.type));
@@ -531,9 +527,9 @@ namespace Bakaford {
 			pool.push_back(arg1);
 			return (*this);
 		}
-		public: inline Reasoner& define(std::string v, Element *tp, ElementType t=Constant, Element *ref=nullptr) {
-			pool.push_back(Element(v,tp,t));
-			if(ref!=nullptr) ref=&(*this)(0);
+		public: inline Reasoner& declare(std::string v, Element *tp, ElementType t=Constant, Element *ref=nullptr) {
+			if(ref!=nullptr) *ref=Element(v,tp,t), pool.push_back(*ref);
+			else			 pool.push_back(Element(v,tp,t));
 			return (*this);
 		}
 		public: inline Reasoner& define(const Element &arg1, const Element &arg2) {
@@ -562,6 +558,10 @@ namespace Bakaford {
 			pool = Handle::emplace(arg1,pool);
 			return (*this);
 		}
+		public: Reasoner& emplace(void) {
+			pool = Handle::emplace((*this)[0],pool);
+			return (*this);
+		}
 		public: Reasoner& rec(Element &arg1) {
 			std::pair<Element,Reference> dist=Handle::recursion(arg1,index++);
 			pool.push_back(dist.first);
@@ -584,11 +584,22 @@ namespace Bakaford {
 			pool.push_back(dist.first);
 			return (*this);
 		}
+		public: inline Reasoner& eq(Element &n) {
+			n=(*this)(0);
+			return (*this);
+		}
+		public: inline void qed(void) {
+		    for(auto& is:pool)
+		        std::cout << is.var << " : " << is.type->var <<"\n";
+		    for(auto& is:ref)
+		        std::cout << is.literal() <<"\n";
+			return ;
+		}
 		public: inline Element& operator() (const size_t& index) {
-			return pool[pool.size()-index-1];
+			return pool[std::max(pool.size()-index-1,(size_t)0)];
 		}
 		public: inline Reference& operator[] (const size_t& index) {
-			return ref[ref.size()-index-1];
+			return ref[std::max(ref.size()-index-1,(size_t)0)];
 		}
 	};
 }
