@@ -102,10 +102,10 @@ namespace Bakaford {
 							
 							if((ring1 || ring2 || ring3) && (istiling1 || istiling2)) {
 								count++;								
-								// [Master Theorem] If all of the tilings except t0 have conlinear conditions, then t0 has the conlinear condition too.
+								// [Master Theorem] If all of the tilings except t0 have collinear conditions, then t0 has the collinear condition too.
 								//   Then name the quiz in a format.
-								if(vertexflag[a]) quiz << count << ") {v" << a << ", v" << c << ", l" << b << "^l" << d << "} are conlinear.\n";
-								else	          quiz << count << ") {v" << b << ", v" << d << ", l" << a << "^l" << c << "} are conlinear.\n";
+								if(vertexflag[a]) quiz << count << ") {v" << a << ", v" << c << ", l" << b << "^l" << d << "} are collinear.\n";
+								else	          quiz << count << ") {v" << b << ", v" << d << ", l" << a << "^l" << c << "} are collinear.\n";
 							}
 						}
 					}
@@ -148,7 +148,7 @@ int main(void) {
 		g.addtiling(v0idx,l0idx,v1idx,l1idx);
 	}
 
-	g.print();
+	// g.print();
 	std::cout << g.exportquiz() << "\n";
 
 	return 0;
