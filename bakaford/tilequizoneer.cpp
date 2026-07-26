@@ -12,6 +12,7 @@
 #include <sstream>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 namespace Bakaford {
 	class Graph {
 		public: std::vector<std::vector<signed int>> edge;
@@ -123,14 +124,21 @@ int main(void) {
 	const float rho=0.7;
 	Bakaford::Graph g(volume);
 	srand (time(0));
+	auto exist=[&](int s0, int s1)->bool {
+		for(auto& is: g.lineref) {
+			if(is.first==s0&&is.second==s1) return true;
+			if(is.first==s1&&is.second==s0) return true;
+		}
+		return false;
+	};
 	
-  // Initialize the graph with random tilings here...
 	for(int i = 0; i < volume; i++) {
 		if(i%2) g.vertexflag[i]=1;
 		else    g.vertexflag[i]=0;
 		int s0=0, s1=0;
-		while(s0==s1)
+		while(s0==s1||exist(s0,s1)) {
 			s0 = (((rand()%volume)>>1)<<1)+1, s1 = (((rand()%volume)>>1)<<1)+1;
+		}
 		if(i%2==0) g.lineref[i]=std::make_pair(s0,s1);
 	}
 
@@ -148,7 +156,7 @@ int main(void) {
 		g.addtiling(v0idx,l0idx,v1idx,l1idx);
 	}
 
-	// g.print();
+	g.print();
 	std::cout << g.exportquiz() << "\n";
 
 	return 0;
