@@ -332,7 +332,7 @@ namespace Bakaford {
 		public: void prove(coord arg, coord brg, coord crg) {
 			std::cout << "\\huge{\\boldsymbol{\\text{Eliminate Rules:}}} \\\\ \n\\begin{cases}\n";
 			for(auto& is:conlist) eliminate(is);
-			std::cout << "\r\\end{cases}\n";
+			std::cout << "\r\\end{cases}\\\\\n\n";
 			std::cout << bradump(arg,brg,crg) << "=\n";
 			return ;
 		}

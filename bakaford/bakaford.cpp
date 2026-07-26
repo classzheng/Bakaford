@@ -28,8 +28,7 @@ int main() {
 	    .declare(C1,"C_1")
 	    .declare(P,"P")
 	    .declare(Q,"Q")
-	    .declare(R,"R")
-	    ;
+	    .declare(R,"R");
     std::cout<<"A = "<<A<<"\nB = "<<B<<"\nC = "<<C<<"\nS = "<<S<<"\n\n";
     std::cout<<"A' = "<<A1<<"\nB' = "<<B1<<"\nC' = "<<C1<<"\n\n";
     std::cout<<"P = "<<P<<"\nQ = "<<Q<<"\nR = "<<R<<"\n\n";
