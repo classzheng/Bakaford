@@ -1,340 +1,177 @@
-/******************************************************************************
- * Bakaford/Bakaford: A Mechanical Theorem Prover based on Clifford Brackets. *
- * @Author: classzheng@github                                                 *
- * @Date: 2026.6.28 (latest upd)                                              *
- * @Reference: https://doi.org/10.1360/za2007-37-5-523                        *
- * @Modules: {}                                                               *
- ******************************************************************************/
-
-
-#include <vector>
-#include <valarray>
-#include <random>
-#include <string>
-#include <iostream>
-#include <sstream>
-#include <complex>
-
-// #pragma once
-#pragma GCC optimize (2)
-
+// bakaford.hpp
+#include "bits/stdc++.h"
 namespace Bakaford {
-
-	using contype = enum {
-		_basepoint, _conlinear, _centroid, _concyclic, _midpoint, _intersection, _projection
-	};
-	using realtype = long double;
-	using coord = std::complex<realtype>;
-	
+	using quotype = long double;
+	using coord = std::complex<quotype>;
 	std::random_device rd;
 	std::mt19937 rng(rd());
-	std::uniform_real_distribution<realtype> dist(-1.L,1.L);
-	realtype eps=1e-5;
-
-	template<typename _t1, typename _t2> class TrivialMap {
-		public: std::vector<_t1> key;
-		public: std::vector<_t2> val;
-		public: TrivialMap(void) = default;
-		public: ~TrivialMap(void) = default;
-		public: _t2& operator[] (const _t1 &t) {
-			for(int i = 0; i < key.size(); i++) {
-				if(key[i]==t) return val[i];
-			}
-			key.push_back(t);
-			val.push_back(_t2());
-			return val.back();
+	std::uniform_real_distribution<quotype> dist(-1.L, 1.L);
+	quotype eps=1e-16;
+	class Point {
+		public: std::string tag;
+		public: coord specialtype;
+		public: Point(void) = default;
+		public: ~Point(void) = default;
+		public: static quotype bracket(const Point &p1, const Point &p2, const Point &p3) {
+			coord a=p1.specialtype;
+			coord b=p2.specialtype;
+			coord c=p3.specialtype;
+			return a.real()*(b.imag()-c.imag())+b.real()*(c.imag()-a.imag())+c.real()*(a.imag()-b.imag());
+		}
+		public: static inline std::string bradump(const Point &a, const Point &b, const Point &c) {
+			std::stringstream ss("");
+			// ss << "\\left[" << a.tag << b.tag << c.tag << "\\right]";
+			ss << "[" << a.tag << b.tag << c.tag << "]";
+			return ss.str();
+		}
+		public: bool operator==(const Point& rhs) {
+			return this->specialtype==rhs.specialtype;
+		}
+		public: inline std::string v(void) {
+			return tag;
 		}
 	};
-	
-	class Construction {
-	
-		public: contype handle=_basepoint;
-		public: coord targetpoint;
-		public: std::vector<coord> basepoints;
-		
-		public: Construction(void) = default;
-		// public: Construction(const contype &c, coord &p0, coord pz[]): handle(c), targetpoint(p0), basepoints(pz) {}
-		public: Construction(const contype &c, coord &p0, std::vector<coord> pz): handle(c), basepoints(pz) {
-			switch((int) handle) {
-				case (_basepoint): {
-					targetpoint = pz[0] + pz[1] + pz[2];  // Identity vector.
-					break;
-				}
-				
-				case (_conlinear): {  // with 2 basepoints
-					targetpoint = basepoints[0] + (basepoints[1] - basepoints[0]) * dist(rng);
-					break;
-				}
-				
-				case (_centroid): {  // with 3 basepoints
-					targetpoint = (basepoints[0] + basepoints[1] + basepoints[2]) / 3.L;
-					break;
-				}
-				
-				case (_concyclic): {  // with 3 basepoints
-					realtype x1 = basepoints[0].real(), y1 = basepoints[0].imag();
-					realtype x2 = basepoints[1].real(), y2 = basepoints[1].imag();
-					realtype x3 = basepoints[2].real(), y3 = basepoints[2].imag();
-					coord circularcen;
-					realtype d = 2.L * ( x1*(y2 - y3) + x2*(y3 - y1) + x3*(y1 - y2) );
-					if (d == 0.L) {
-						circularcen = (basepoints[0] + basepoints[1] + basepoints[2]) / 3.L;
-					} else {
-						realtype s1 = x1*x1 + y1*y1;
-						realtype s2 = x2*x2 + y2*y2;
-						realtype s3 = x3*x3 + y3*y3;
-						realtype ux = ( s1*(y2 - y3) + s2*(y3 - y1) + s3*(y1 - y2) ) / d;
-						realtype uy = ( s1*(x3 - x2) + s2*(x1 - x3) + s3*(x2 - x1) ) / d;
-						circularcen = coord(ux, uy);
-					}
-					realtype r = std::abs(basepoints[0] - circularcen);
-					if (r == 0.L) {
-						targetpoint = (basepoints[0] + basepoints[1] + basepoints[2]) / 3.L;
-					} else {
-						realtype theta = dist(rng) * 2.L * acosl(-1.L);
-						targetpoint = circularcen + coord(r * cosl(theta), r * sinl(theta));
-					}
-					break;
-				}
-				
-				case (_midpoint): {  // with 2 basepoints
-					targetpoint = (basepoints[0]+basepoints[1]) / 2.L;
-					break;
-				}
-				
-				case (_intersection): {  // with 4 basepoints
-					realtype x1 = basepoints[0].real(), y1 = basepoints[0].imag();
-					realtype x2 = basepoints[1].real(), y2 = basepoints[1].imag();
-					realtype x3 = basepoints[2].real(), y3 = basepoints[2].imag();
-					realtype x4 = basepoints[3].real(), y4 = basepoints[3].imag();
-					realtype d = (x1 - x2)*(y3 - y4) - (y1 - y2)*(x3 - x4);
-					if (d == 0.L) {
-						targetpoint = (basepoints[0] + basepoints[1] + basepoints[2] + basepoints[3]) / 4.L;
-					} else {
-						realtype det1 = x1*y2 - y1*x2;
-						realtype det2 = x3*y4 - y3*x4;
-						realtype ux = (det1*(x3 - x4) - (x1 - x2)*det2) / d;
-						realtype uy = (det1*(y3 - y4) - (y1 - y2)*det2) / d;
-						targetpoint = coord(ux, uy);
-					}
-					break;
-				}
-
-				case (_projection): {  // with 3 basepoints
-					realtype x0 = basepoints[0].real(), y0 = basepoints[0].imag();
-					realtype xa = basepoints[1].real(), ya = basepoints[1].imag();
-					realtype xb = basepoints[2].real(), yb = basepoints[2].imag();
-					realtype abx = xb - xa, aby = yb - ya;
-					realtype den = abx*abx + aby*aby;
-					if (den == 0.L) {
-						targetpoint = (basepoints[0] + basepoints[1]) / 2.L;
-					} else {
-						realtype t = ((x0 - xa)*abx + (y0 - ya)*aby) / den;
-						targetpoint = coord(xa + t*abx, ya + t*aby);
-					}
-					break;
-				}
-
-				default: {}
-			};
-			p0=targetpoint;
-			return ;
-		}
-		public: ~Construction(void) = default;
-		
-		public: const contype& operator* (void) {
-			return handle;
-		}
-		public: const coord& operator~ (void) {
-			return targetpoint;
-		}
-		public: std::string literal(void) {
-			std::stringstream ss("");
-			switch((int) handle) {
-				case (_basepoint): {
-					ss << "Basepoints(" << basepoints[0] << "," << basepoints[1] << "," << basepoints[2] << ");";
-					break;
-				}
-				
-				case (_conlinear): {
-					ss << "Conlinear(" << targetpoint << ";"
-					   << basepoints[0] << "," << basepoints[1] << ");";
-					break;
-				}
-				
-				case (_centroid): {
-					ss << "Centroid(" << targetpoint << ";"
-					   << basepoints[0] << "," << basepoints[1] << "," << basepoints[2] << ");";
-					break;
-				}
-				
-				case (_concyclic): {
-					ss << "Concyclic(" << targetpoint << ";"
-					   << basepoints[0] << "," << basepoints[1] << "," << basepoints[2] << ");";
-					break;
-				}
-				
-				case (_midpoint): {
-					ss << "Midpoint(" << targetpoint << ";"
-					   << basepoints[0] << "," << basepoints[1] << ");";
-					break;
-				}
-				
-				case (_intersection): {
-					ss << "Intersection(" << targetpoint << ";"
-					   << basepoints[0] << "*" << basepoints[1] << "," << basepoints[2] << "*" << basepoints[3] << ");";
-					break;
-				}
-				
-				case (_projection): {
-					ss << "Projection(" << targetpoint << ";"
-					   << basepoints[0] << "," << basepoints[1] << "," << basepoints[2] << ");";
-					break;
-				}
-
-				default: {}
-			};
-			return ss.str();
+	bool operator< ([[maybe_unused]] Point lhs, [[maybe_unused]] Point rhs) {
+		return true;  // Not important
+	}
+	class Bracket {  // Triple
+		public: Point p1, p2, p3;
+		public: Bracket(void) = default;
+		public: Bracket(Point a, Point b, Point c): p1(a), p2(b), p3(c) {}
+		public: ~Bracket(void) = default;
+		public: inline quotype operator() (void) {
+			return Point::bracket(p1,p2,p3);
 		}
 	};
 	class Prover {
-	
-		private: std::vector<coord> varlist;  // also the order of elimination.
-		private: std::vector<Construction> conlist;
-		private: TrivialMap<coord,std::string> varmap;
-		
+		public: std::vector<Point> conlist;
+		public: std::map<Point, unsigned> linepassed;
+		public: std::vector<std::function<void(Prover&)>> callbacks;
 		public: Prover(void) = default;
 		public: ~Prover(void) = default;
 		
-		public: inline Prover& basepoints(coord a, coord b, coord c) {
-			std::vector<coord> initlist={a,b,c};
-			coord base(0,0);
-			conlist.push_back(Construction(_basepoint,base,initlist));
-			varlist.push_back(~conlist[conlist.size()-1]);
-			varlist.push_back(a);
-			varlist.push_back(b);
-			varlist.push_back(c);
-			return (*this);
-		}
-		public: inline Prover& conlinear(coord &p, coord a, coord b) {
-			std::vector<coord> initlist={a,b};
-			conlist.push_back(Construction(_conlinear,p,initlist));
-			// varlist.push_back(~conlist[conlist.size()-1]);
-			varlist.push_back(p);
-			return (*this);
-		}
-		public: inline Prover& centroid(coord &p, coord a, coord b, coord c) {
-			std::vector<coord> initlist={a,b,c};
-			conlist.push_back(Construction(_centroid,p,initlist));
-			// varlist.push_back(~conlist[conlist.size()-1]);
-			varlist.push_back(p);
-			return (*this);
-		}
-		public: inline Prover& concyclic(coord &p, coord a, coord b, coord c) {
-			std::vector<coord> initlist={a,b,c};
-			conlist.push_back(Construction(_concyclic,p,initlist));
-			// varlist.push_back(~conlist[conlist.size()-1]);
-			varlist.push_back(p);
-			return (*this);
-		}
-		public: inline Prover& midpoint(coord &p, coord a, coord b) {
-			std::vector<coord> initlist={a,b};
-			conlist.push_back(Construction(_midpoint,p,initlist));
-			// varlist.push_back(~conlist[conlist.size()-1]);
-			varlist.push_back(p);
-			return (*this);
-		}
-		public: inline Prover& intersection(coord &p, coord a, coord b, coord c, coord d) {
-			std::vector<coord> initlist={a,b,c,d};
-			conlist.push_back(Construction(_intersection,p,initlist));
-			// varlist.push_back(~conlist[conlist.size()-1]);
-			varlist.push_back(p);
-			return (*this);
-		}
-		public: inline Prover& projection(coord &p, coord a, coord b, coord c) {
-			std::vector<coord> initlist={a,b,c};
-			conlist.push_back(Construction(_projection,p,initlist));
-			// varlist.push_back(~conlist[conlist.size()-1]);
-			varlist.push_back(p);
-			return (*this);
-		}
-		public: inline Prover& declare(const coord &a, std::string t) {
-			varmap[a]=t;
+		public: Prover& basepoint(Point &p, std::string tag) {
+			p.tag=tag;
+			do p.specialtype = coord(dist(rng), dist(rng));
+			while(std::find(conlist.begin(),conlist.end(),p)!=conlist.end());
+			conlist.push_back(p);
+			callbacks.push_back([p]([[maybe_unused]] Prover& prov)->void{ return ; });  // Empty eliminator
 			return (*this);
 		}
 		
-		public: inline static realtype bracket(const coord &a, const coord &b, const coord &c) {
-			return a.real()*(b.imag()-c.imag())+b.real()*(c.imag()-a.imag())+c.real()*(a.imag()-b.imag());
+		public: Prover& freepoint(Point &p, std::string tag, const Point &p1, const Point &p2, const Point &p3) {
+			p.tag=tag;
+			do p.specialtype = p1.specialtype * dist(rng) + p2.specialtype * dist(rng) + p3.specialtype * dist(rng);
+			while(std::find(conlist.begin(),conlist.end(),p)!=conlist.end());
+			conlist.push_back(p);
+			callbacks.push_back([p,p1,p2,p3]([[maybe_unused]] Prover& prov)->void{ return ; });  // Empty eliminator
+			return (*this);
 		}
-		public: inline std::string bradump(const coord &a, const coord &b, const coord &c) {
-			std::stringstream ss("");
-			ss << "\\left[" << varmap[a] << varmap[b] << varmap[c] << "\\right]";
-			return ss.str();
+		
+		public: Prover& collinear(Point &p, std::string tag, const Point &p1, const Point &p2) {
+			p.tag=tag;
+			do p.specialtype = p1.specialtype+(p2.specialtype-p1.specialtype)*dist(rng); 
+			while(std::find(conlist.begin(),conlist.end(),p)!=conlist.end());
+			conlist.push_back(p);
+			linepassed[p]++;
+			callbacks.push_back([p,p1,p2](Prover& prov)->void{
+				std::cout << Point::bradump(p,p1,p2) << "&=0.\\\\\n";
+				for(auto& is: prov.conlist) {
+					if(is==p||is==p1||is==p2) continue;
+					prov.eliminate(p,p1,p2,p,is); 
+				}
+			});
+			return (*this);
 		}
-		public: void eliminate(const Construction& con) {
-			switch((int) con.handle) {  // Not incidence geometric constructions: Not available
-				case (_basepoint): {
-					std::cout << "  \\left[" << varmap[con.basepoints[0]] << varmap[con.basepoints[1]] << varmap[con.basepoints[2]] << "\\right]\\neq 0.\\\\\n";
-					break;
-				}
-				
-				case (_conlinear): {
-					std::cout << "  \\left[" << varmap[con.basepoints[0]] << varmap[con.basepoints[1]] << varmap[con.targetpoint] << "\\right]=0.\\\\\n";
-					break;
-				}
-				
-				case (_centroid): {  // Not incidence geometric constructions: Not available
-					break;
-				}
-				
-				case (_concyclic): {  // Not incidence geometric constructions: Not available
-					break;
-				}
-				
-				case (_midpoint): {  // Not incidence geometric constructions: Not available
-					break;
-				}
-				
-				case (_intersection): {
-					const coord &pt0=con.basepoints[0], &pt1=con.basepoints[1], &pt2=con.basepoints[2], &pt3=con.basepoints[3]; 
-					for(auto& is:varlist) {
-						for(auto& si:varlist) {
-							if(is==si||is==pt0||is==pt1||is==pt2||is==pt3||si==pt0||si==pt1||si==pt2||si==pt3||is==con.targetpoint||si==con.targetpoint) continue;
-							realtype bra1=Prover::bracket(pt0,is,si)*Prover::bracket(pt1,is,si);
-							realtype bra2=Prover::bracket(pt2,is,si)*Prover::bracket(pt3,is,si);
-							realtype bra3=Prover::bracket(pt0,pt1,is)*Prover::bracket(pt0,pt1,si)*Prover::bracket(pt2,pt3,is)*Prover::bracket(pt2,pt3,si);
-							if(std::fabs(bra1)<=eps)
-								std::cout << "  \\left[" << varmap[con.targetpoint] << varmap[is] << varmap[si] << "\\right] = \\left["
-										  << varmap[pt0] << varmap[pt2] << varmap[pt3] << "\\right]\\left[" << varmap[pt1] << varmap[is] << varmap[si] << "\\right] - \\left["
-										  << varmap[pt1] << varmap[pt2] << varmap[pt3] << "\\right]\\left[" << varmap[pt0] << varmap[is] << varmap[si] << "\\right].\\\\\n";
-							if(std::fabs(bra2)<=eps)
-								std::cout << "  \\left[" << varmap[con.targetpoint] << varmap[is] << varmap[si] << "\\right] = -\\left["
-										  << varmap[pt2] << varmap[pt0] << varmap[pt1] << "\\right]\\left[" << varmap[pt1] << varmap[is] << varmap[si] << "\\right] + \\left["
-										  << varmap[pt3] << varmap[pt0] << varmap[pt1] << "\\right]\\left[" << varmap[pt0] << varmap[is] << varmap[si] << "\\right].\\\\\n";
-							if(std::fabs(bra3)<=eps)
-								std::cout << "  \\left[" << varmap[con.targetpoint] << varmap[is] << varmap[si] << "\\right] = \\left["
-										  << varmap[pt0] << varmap[pt1] << varmap[is] << "\\right]\\left[" << varmap[pt2] << varmap[pt3] << varmap[si] << "\\right] - \\left["
-										  << varmap[pt0] << varmap[pt1] << varmap[si] << "\\right]\\left[" << varmap[pt2] << varmap[pt3] << varmap[is] << "\\right].\\\\\n";
-							// Damn, i forgot that i've implemented Prover::bradump.
-						}
+		
+		public: Prover& intersection(Point &p, std::string tag, const Point &p1, const Point &p2, const Point &p3, const Point &p4) {
+			p.tag=tag;
+			quotype x1 = p1.specialtype.real(), y1 = p1.specialtype.imag();
+			quotype x2 = p2.specialtype.real(), y2 = p2.specialtype.imag();
+			quotype x3 = p3.specialtype.real(), y3 = p3.specialtype.imag();
+			quotype x4 = p4.specialtype.real(), y4 = p4.specialtype.imag();
+			quotype d = (x1 - x2)*(y3 - y4) - (y1 - y2)*(x3 - x4);
+			if (d == 0.L) {
+				p.specialtype = (p1.specialtype + p2.specialtype + p3.specialtype + p4.specialtype) / 4.L;
+			} else {
+				quotype det1 = x1*y2 - y1*x2;
+				quotype det2 = x3*y4 - y3*x4;
+				quotype ux = (det1*(x3 - x4) - (x1 - x2)*det2) / d;
+				quotype uy = (det1*(y3 - y4) - (y1 - y2)*det2) / d;
+				p.specialtype = coord(ux, uy);
+			}
+			conlist.push_back(p);
+			linepassed[p]++;
+			callbacks.push_back([p,p1,p2,p3,p4](Prover& prov)->void{
+				std::cout << Point::bradump(p,p1,p2) << "&=0.\\\\\n";
+				std::cout << Point::bradump(p,p3,p4) << "&=0.\\\\\n";
+				prov.eliminate(p,p1,p2,p3,p4);
+			});
+			return (*this);
+		}
+		
+		public: Prover& eliminate(const Point &p, const Point &p1, const Point &p2, const Point &p3, const Point &p4) {
+			for(auto& is:conlist) {
+				for(auto& si:conlist) {
+					// std::cout << is.tag << si.tag << "\n";
+					if(is==si||is==p1||is==p2||is==p3||is==p4||si==p1||si==p2||si==p3||si==p4||is==p||si==p) continue;
+					bool flag=false;
+					quotype bra1 = Prover::bracket(p1,is,si)*Prover::bracket(p2,is,si);
+					quotype bra2 = Prover::bracket(p3,is,si)*Prover::bracket(p4,is,si);
+					quotype bra3 = Prover::bracket(p1,p2,is)*Prover::bracket(p1,p2,si)*Prover::bracket(p3,p4,is)*Prover::bracket(p3,p4,si);
+					if(std::fabs(bra1)<=eps) 
+						std::cout << Point::bradump(p,is,si) << " &= "
+								  << Prover::minidump(p1,p3,p4) << "\\cdot" << Prover::minidump(p2,is,si) << " - "
+								  << Prover::minidump(p2,p3,p4) << "\\cdot" << Prover::minidump(p1,is,si) << ".\\\\\n", flag=true;
+					if(std::fabs(bra2)<=eps) 
+						std::cout << Point::bradump(p,is,si) << " &= -"
+								  << Prover::minidump(p3,p1,p2) << "\\cdot" << Prover::minidump(p2,is,si) << " + "
+								  << Prover::minidump(p4,p1,p2) << "\\cdot" << Prover::minidump(p1,is,si) << ".\\\\\n", flag=true;
+					if(std::fabs(bra3)<=eps) 
+						std::cout << Point::bradump(p,is,si) << " &= "
+								  << Prover::minidump(p1,p2,is) << "\\cdot" << Prover::minidump(p3,p4,si) << " - "
+								  << Prover::minidump(p1,p2,si) << "\\cdot" << Prover::minidump(p3,p4,is) << ".\\\\\n", flag=true;
+					if(flag) continue; else {
+						std::vector<int> psig={1,2,3};
+						do {
+							Point ai1, ai2, aj1, aj2, ak1, ak2;
+							if(psig[0]==1) ai1=p1, ai2=p2;
+							if(psig[0]==2) ai1=p3, ai2=p4;
+							if(psig[0]==3) ai1=is, ai2=si;
+							
+							if(psig[1]==1) aj1=p1, aj2=p2;
+							if(psig[1]==2) aj1=p3, aj2=p4;
+							if(psig[1]==3) aj1=is, aj2=si;
+							
+							if(psig[2]==1) ak1=p1, ak2=p2;
+							if(psig[2]==2) ak1=p3, ak2=p4;
+							if(psig[2]==3) ak1=is, ak2=si;
+							if(std::fabs(Point::bracket(p,is,si)-
+										(Point::bracket(ai1,aj1,aj2)*Point::bracket(ai2,ak1,ak2)-Point::bracket(ai2,aj1,aj2)*Point::bracket(ai1,ak1,ak2)))
+											<=eps)
+							std::cout << Point::bradump(p,is,si) << " &= "
+									  << Prover::minidump(ai1,aj1,aj2) << "\\cdot" << Prover::minidump(ai2,ak1,ak2) << " - "
+									  << Prover::minidump(ai2,aj1,aj2) << "\\cdot" << Prover::minidump(ai1,ak1,ak2) << ".\\\\\n";
+						} while(std::next_permutation(psig.begin(),psig.end()));
 					}
-					break;
 				}
-				
-				case (_projection): {  // Not incidence geometric constructions: Not available
-					break;
-				}
+			}
+			conlist.erase(std::find(conlist.begin(),conlist.end(),p));
+			return (*this);
+		}
 
-				default: {}
-			};
+		public: void qed(void) {
+			while(!callbacks.empty()) callbacks.back()(*this), callbacks.pop_back();
+			// for(auto& is: callbacks) is(*this);
 			return ;
 		}
-		public: void prove(coord arg, coord brg, coord crg) {
-			std::cout << "\\huge{\\boldsymbol{\\text{Eliminate Rules:}}} \\\\ \n\\begin{cases}\n";
-			for(auto& is:conlist) eliminate(is);
-			std::cout << "\r\\end{cases}\\\\\n\n";
-			std::cout << bradump(arg,brg,crg) << "=\n";
-			return ;
+
+		public: static inline quotype bracket(Point p1, Point p2, Point p3) {
+			return Point::bracket(p1,p2,p3);
+		}
+		public: static std::string minidump(Point p1, Point p2, Point p3) {
+			if(std::fabs(Point::bracket(p1,p2,p3))<=eps) return "0";
+			else										 return Point::bradump(p1,p2,p3);
 		}
 	};
-}
+};
