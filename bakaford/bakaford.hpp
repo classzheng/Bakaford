@@ -11,6 +11,7 @@ namespace Bakaford {
 		public: std::string tag;
 		public: coord specialtype;
 		public: Point(void) = default;
+		public: Point(std::string t, coord s): tag(t), specialtype(s) {}
 		public: ~Point(void) = default;
 		public: static quotype bracket(const Point &p1, const Point &p2, const Point &p3) {
 			coord a=p1.specialtype;
@@ -24,28 +25,111 @@ namespace Bakaford {
 			ss << "[" << a.tag << b.tag << c.tag << "]";
 			return ss.str();
 		}
-		public: bool operator==(const Point& rhs) {
-			return this->specialtype==rhs.specialtype;
-		}
 		public: inline std::string v(void) {
 			return tag;
 		}
 	};
-	bool operator< ([[maybe_unused]] Point lhs, [[maybe_unused]] Point rhs) {
-		return true;  // Not important
+	inline bool operator< (Point lhs, Point rhs) {
+		return std::fabs(lhs.specialtype-rhs.specialtype)<0;  // Very important!!
+	}
+	inline bool operator==(const Point& lhs, const Point& rhs) {
+		return lhs.specialtype==rhs.specialtype;
 	}
 	class Bracket {  // Triple
 		public: Point p1, p2, p3;
 		public: Bracket(void) = default;
 		public: Bracket(Point a, Point b, Point c): p1(a), p2(b), p3(c) {}
 		public: ~Bracket(void) = default;
-		public: inline quotype operator() (void) {
+		public: inline quotype operator() (void) const {
 			return Point::bracket(p1,p2,p3);
+		}
+		public: inline std::string bradump(void) const {
+			return Point::bradump(p1,p2,p3);
+		}
+		public: bool nearmatch(const Bracket rhs) const {  // near match
+			std::vector<Point> v1={p1,p2,p3};
+			return std::find(v1.begin(),v1.end(),rhs.p1)!=v1.end() &&
+				   std::find(v1.begin(),v1.end(),rhs.p2)!=v1.end() && 
+				   std::find(v1.begin(),v1.end(),rhs.p3)!=v1.end();
+		}
+		public: Bracket inverse(int rhs) const {  // rhs \in ±1
+			if(rhs==1) return Bracket(p1, p2, p3);
+			else	   return Bracket(p2, p1, p3);
+		}
+	};
+	inline bool operator== (const Bracket lhs, const Bracket rhs) {
+		return lhs.p1.specialtype==rhs.p1.specialtype &&
+			   lhs.p2.specialtype==rhs.p2.specialtype &&
+			   lhs.p3.specialtype==rhs.p3.specialtype;
+	}
+	class Polynomial {
+		public: Bracket maintain;
+		public: struct Monomial { std::vector<Bracket> factors; quotype coef; };
+		public: std::vector<Monomial> terms;
+		public: Polynomial(void) = default;
+		public: Polynomial(Bracket m): maintain(m) {}
+		public: ~Polynomial(void) = default;
+		public: Polynomial& setmain(const Bracket m) {
+			maintain = m;
+			return *this;
+		}
+		public: Polynomial& setterm1(const Bracket a, const Bracket b) {
+			terms.push_back(Monomial{{a,b}, 1.L});
+			return *this;
+		}
+		public: Polynomial& setterm2(const Bracket a, const Bracket b) {
+			terms.push_back(Monomial{{a,b}, 1.L});
+			return *this;
+		}
+		public: inline quotype operator() (void) const {
+			return maintain();
+		}
+		public: inline int operator^ (const Bracket bra) const {
+			if(!maintain.nearmatch(bra)) return 0;
+			quotype v = maintain()/bra();
+			if(std::fabs(v) <= eps) return 0;
+			return v > 0 ? 1 : -1;
+		}
+		public: std::string dump(void) const {
+			std::stringstream ss("");
+			ss << maintain.bradump() << "&=";
+			if(terms.empty()) { ss << "0"; return ss.str(); }
+			bool first = true;
+			for(const auto &t: terms) {
+				if(std::fabs(t.coef) <= eps) continue;
+				if(!first) ss << "+";
+				for(const auto &f: t.factors) ss << f.bradump();
+				if(std::fabs(t.coef - 1.L) > eps) ss << "(" << t.coef << ")";
+				first = false;
+			}
+			return ss.str();
+		}
+		public: std::string localdump(void) const {
+			std::stringstream ss("");
+			ss << "  &=";
+			if(terms.empty()) { ss << "0"; return ss.str(); }
+			bool first = true;
+			for(const auto &t: terms) {
+				if(std::fabs(t.coef) <= eps) continue;
+				if(!first) ss << "+";
+				for(const auto &f: t.factors) ss << f.bradump();
+				if(std::fabs(t.coef - 1.L) > eps) ss << "(" << t.coef << ")";
+				first = false;
+			}
+			return ss.str();
+		}
+		public: void eliminate([[maybe_unused]] const std::vector<Polynomial>& eliminators) {
+			std::cout << maintain.bradump() << "&=";
+			terms.push_back(Monomial{{maintain},1.L});
+			
+			std::cout << localdump();
+			return ;
 		}
 	};
 	class Prover {
 		public: std::vector<Point> conlist;
 		public: std::map<Point, unsigned> linepassed;
+		public: std::vector<Polynomial> eliminators;
 		public: std::vector<std::function<void(Prover&)>> callbacks;
 		public: Prover(void) = default;
 		public: ~Prover(void) = default;
@@ -75,7 +159,7 @@ namespace Bakaford {
 			conlist.push_back(p);
 			linepassed[p]++;
 			callbacks.push_back([p,p1,p2](Prover& prov)->void{
-				std::cout << Point::bradump(p,p1,p2) << "&=0.\\\\\n";
+				// std::cout << Point::bradump(p,p1,p2) << "&=0.\\\\\n";
 				for(auto& is: prov.conlist) {
 					if(is==p||is==p1||is==p2) continue;
 					prov.eliminate(p,p1,p2,p,is); 
@@ -103,8 +187,8 @@ namespace Bakaford {
 			conlist.push_back(p);
 			linepassed[p]++;
 			callbacks.push_back([p,p1,p2,p3,p4](Prover& prov)->void{
-				std::cout << Point::bradump(p,p1,p2) << "&=0.\\\\\n";
-				std::cout << Point::bradump(p,p3,p4) << "&=0.\\\\\n";
+				// std::cout << Point::bradump(p,p1,p2) << "&=0.\\\\\n";
+				// std::cout << Point::bradump(p,p3,p4) << "&=0.\\\\\n";
 				prov.eliminate(p,p1,p2,p3,p4);
 			});
 			return (*this);
@@ -119,18 +203,27 @@ namespace Bakaford {
 					quotype bra1 = Prover::bracket(p1,is,si)*Prover::bracket(p2,is,si);
 					quotype bra2 = Prover::bracket(p3,is,si)*Prover::bracket(p4,is,si);
 					quotype bra3 = Prover::bracket(p1,p2,is)*Prover::bracket(p1,p2,si)*Prover::bracket(p3,p4,is)*Prover::bracket(p3,p4,si);
-					if(std::fabs(bra1)<=eps) 
-						std::cout << Point::bradump(p,is,si) << " &= "
-								  << Prover::minidump(p1,p3,p4) << "\\cdot" << Prover::minidump(p2,is,si) << " - "
-								  << Prover::minidump(p2,p3,p4) << "\\cdot" << Prover::minidump(p1,is,si) << ".\\\\\n", flag=true;
-					if(std::fabs(bra2)<=eps) 
-						std::cout << Point::bradump(p,is,si) << " &= -"
-								  << Prover::minidump(p3,p1,p2) << "\\cdot" << Prover::minidump(p2,is,si) << " + "
-								  << Prover::minidump(p4,p1,p2) << "\\cdot" << Prover::minidump(p1,is,si) << ".\\\\\n", flag=true;
-					if(std::fabs(bra3)<=eps) 
-						std::cout << Point::bradump(p,is,si) << " &= "
-								  << Prover::minidump(p1,p2,is) << "\\cdot" << Prover::minidump(p3,p4,si) << " - "
-								  << Prover::minidump(p1,p2,si) << "\\cdot" << Prover::minidump(p3,p4,is) << ".\\\\\n", flag=true;
+					if(std::fabs(bra1)<=eps) {
+						Polynomial poly;
+						poly.setmain(Bracket(p,is,si))
+						  .setterm1(Bracket(p1,p3,p4), Bracket(p2,is,si))
+						  .setterm2(Bracket(p2,p3,p4), Bracket(p1,is,si)), flag=true;
+						eliminators.push_back(poly);
+					}
+					if(std::fabs(bra2)<=eps) {
+						Polynomial poly;
+						poly.setmain(Bracket(p,is,si))
+						  .setterm2(Bracket(p3,p1,p2), Bracket(p2,is,si))
+						  .setterm1(Bracket(p4,p1,p2), Bracket(p1,is,si)), flag=true;
+						eliminators.push_back(poly);
+					}
+					if(std::fabs(bra3)<=eps) {
+						Polynomial poly;
+						poly.setmain(Bracket(p,is,si))
+						  .setterm1(Bracket(p1,p2,is), Bracket(p3,p4,si))
+						  .setterm2(Bracket(p1,p2,si), Bracket(p3,p4,is)), flag=true;
+						eliminators.push_back(poly);
+					}
 					if(flag) continue; else {
 						std::vector<int> psig={1,2,3};
 						do {
@@ -148,10 +241,13 @@ namespace Bakaford {
 							if(psig[2]==3) ak1=is, ak2=si;
 							if(std::fabs(Point::bracket(p,is,si)-
 										(Point::bracket(ai1,aj1,aj2)*Point::bracket(ai2,ak1,ak2)-Point::bracket(ai2,aj1,aj2)*Point::bracket(ai1,ak1,ak2)))
-											<=eps)
-							std::cout << Point::bradump(p,is,si) << " &= "
-									  << Prover::minidump(ai1,aj1,aj2) << "\\cdot" << Prover::minidump(ai2,ak1,ak2) << " - "
-									  << Prover::minidump(ai2,aj1,aj2) << "\\cdot" << Prover::minidump(ai1,ak1,ak2) << ".\\\\\n";
+											<=eps) {
+								Polynomial poly;
+								poly.setmain(Bracket(p,is,si))
+								  .setterm1(Bracket(ai1,aj1,aj2), Bracket(ai2,ak1,ak2))
+								  .setterm2(Bracket(ai2,aj1,aj2), Bracket(ai1,ak1,ak2));
+								eliminators.push_back(poly);
+							}
 						} while(std::next_permutation(psig.begin(),psig.end()));
 					}
 				}
@@ -160,9 +256,10 @@ namespace Bakaford {
 			return (*this);
 		}
 
-		public: void qed(void) {
+		public: void qed(Polynomial conc) {
 			while(!callbacks.empty()) callbacks.back()(*this), callbacks.pop_back();
-			// for(auto& is: callbacks) is(*this);
+			for(auto& is: eliminators) std::cout << is.dump() << "\\\\\n";
+			conc.eliminate(eliminators);
 			return ;
 		}
 

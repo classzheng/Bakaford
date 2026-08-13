@@ -9,7 +9,6 @@ int main(){
      .intersection(X,"X",A,B,Ap,Bp)
      .intersection(Y,"Y",B,C,Bp,Cp)
      .intersection(Z,"Z",C,A,Cp,Ap)
-     .qed();
-    std::cout<<Point::bradump(X,Y,Z)<<"&="<<Point::bracket(X,Y,Z)<<".\\\\\n";
+     .qed(Bracket(X,Y,Z));
     return 0;
 }
