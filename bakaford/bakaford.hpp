@@ -24,7 +24,9 @@ namespace Bakaford {
 	std::random_device rd;
 	std::mt19937 rng(rd());
 	std::uniform_real_distribution<quotype> dist(-1.L, 1.L);
-	quotype eps=1e-7;
+	const quotype eps=1e-7;
+
+	
 	class Point {
 		public: std::string tag;
 		public: coord specialtype;
@@ -52,6 +54,8 @@ namespace Bakaford {
 	[[nodiscard]] inline bool operator==(const Point& lhs, const Point& rhs) {
 		return lhs.specialtype==rhs.specialtype;
 	}
+
+	
 	class Bracket {  // Triple
 		public: Point p1, p2, p3;
 		public: Bracket(void) = default;
@@ -85,6 +89,7 @@ namespace Bakaford {
 			   lhs.p2.specialtype==rhs.p2.specialtype &&
 			   lhs.p3.specialtype==rhs.p3.specialtype;
 	}
+
 	
 	struct Monomial {
 		std::vector<Bracket> factors; quotype coef;
@@ -100,6 +105,8 @@ namespace Bakaford {
 			return factors.empty() || std::fabs(coef)<=eps;
 		}
 	};
+
+	
 	class Polynomial {
 		public: Bracket maintain;
 		public: std::vector<Monomial> terms;
@@ -122,11 +129,6 @@ namespace Bakaford {
 			return maintain()/bra();
 		}
 		
-		/**
-		 * @function Bakaford::Polynomial::dump
-		 * @description "Return the formatted string of a polynomial."
-		 * @returns {String}
-		 */
 		public: [[nodiscard]] std::string dump(void) const {
 			std::stringstream ss("=");
 			if(terms.empty()) { ss << "0"; return ss.str(); }
@@ -145,15 +147,8 @@ namespace Bakaford {
 			}
 			if(fullempty) ss << "0";
 			return ss.str();
-		}		
-
-		/**
-		 * @function Bakaford::Polynomial::eliminate
-		 * @description "Eliminate the terms with respect to the eliminators."
-		 * @param {Vector} eliminators
-		 * @param {Vector} ord  // not available
-		 * @returns {Integer}
-		 */
+		}	
+		
 		public: [[nodiscard]] int eliminate(const std::vector<Polynomial>& eliminators, [[maybe_unused]] std::vector<Point> ord) {
 			std::vector<Monomial> output;
 			std::vector<Monomial> work = terms;
@@ -194,7 +189,7 @@ namespace Bakaford {
 				}
 			}
 			terms.swap(output);
-			std::cout << "\n" << maintain.bradump() << "=" << dump();
+			std::cout << "\n" << maintain.bradump() << "=" << dump() << ". □\n";
 			return episode;
 		}
 	};
@@ -207,18 +202,6 @@ namespace Bakaford {
 		public: Prover(void) = default;
 		public: ~Prover(void) = default;
 		
-		/**
-		 * @function Bakaford::Prover::basepoint, Bakaford::Prover::freepoint,
-		 * 			 Bakaford::Prover::collinear, Bakaford::Prover::intersection
-		 * @description "A group of chain methods to generate random coordinates."
-		 * @param {Point&} p
-		 * @param {String} tag
-		 * @param {const Point&} p1
-		 * @param {const Point&} p2
-		 * @param {const Point&} p3
-		 * @param {const Point&} p4
-		 * @returns {Prover&}
-		 */
 		public: [[nodiscard]] Prover& basepoint(Point &p, std::string tag) {
 			p.tag=tag;
 			do p.specialtype = coord(dist(rng), dist(rng));
@@ -286,16 +269,6 @@ namespace Bakaford {
 			return (*this);
 		}
 		
-		/**
-		 * @function Bakaford::Prover::eliminate
-		 * @description "Eliminate with respect to the rules."
-		 * @param {Point&} p
-		 * @param {const Point&} p1
-		 * @param {const Point&} p2
-		 * @param {const Point&} p3
-		 * @param {const Point&} p4
-		 * @returns None
-		 */
 		public: void eliminate(const Point &p, const Point &p1, const Point &p2, const Point &p3, const Point &p4) {
 			for(auto& is:conlist) {
 				for(auto& si:conlist) {
@@ -305,7 +278,6 @@ namespace Bakaford {
 					quotype bra2 = Prover::bracket(p3,is,si)*Prover::bracket(p4,is,si);
 					quotype bra3 = Prover::bracket(p1,p2,is)*Prover::bracket(p1,p2,si)*Prover::bracket(p3,p4,is)*Prover::bracket(p3,p4,si);
 					if(std::fabs(bra1)<=eps) {
-						std::cout << Point::bradump(p1,is,si) << Point::bradump(p2,is,si) << "collinear?\n";
 						Polynomial poly;
 						poly.set(Bracket(p,is,si))
 						  << Monomial{{Bracket(p1,p3,p4),Bracket(p2,is,si)}, 1}
@@ -313,7 +285,6 @@ namespace Bakaford {
 						eliminators.push_back(poly);
 					}
 					if(std::fabs(bra2)<=eps) {
-						std::cout << Point::bradump(p3,is,si) << Point::bradump(p4,is,si) << "collinear?\n";
 						Polynomial poly;
 						poly.set(Bracket(p,is,si))
 						  << Monomial{{Bracket(p4,p1,p2),Bracket(p1,is,si)}, 1}
@@ -360,14 +331,7 @@ namespace Bakaford {
 			return ;
 		}
 
-		/**
-		 * @function Bakaford::Prover::qed
-		 * @description "Quiet Easy Done."
-		 * @param {Polynomial} conc
-		 * @param {Boolean} detail=true
-		 * @returns {Integer}
-		 */
-		public: int qed(Polynomial conc, bool detail=false) {
+		public: int qed(Polynomial conc, bool detail=false) {  // Quite Easy Done!! □
 			std::vector<Point> ord=conlist;
 			while(!callbacks.empty()) callbacks.back()(*this), callbacks.pop_back();
 			if(detail) {

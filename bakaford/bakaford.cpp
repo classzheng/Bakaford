@@ -14,6 +14,6 @@ int main(void) {
      .intersection(X,"X",A,B,Ap,Bp)
      .intersection(Y,"Y",B,C,Bp,Cp)
      .intersection(Z,"Z",C,A,Cp,Ap)
-     .qed(Bakaford::Polynomial(Bakaford::Bracket(X,Y,Z)));
+     .qed(Bakaford::Polynomial(Bakaford::Bracket(X,Y,Z)),false);  // Chain methods
     return 0;
 }
