@@ -4,11 +4,14 @@
 
 <img width="644" height="741" alt="東方幻存神签 pdf截的图比较糊因为导出图片效果也好不到哪去" src="https://github.com/user-attachments/assets/33b8f958-dba0-4c5c-b206-10588ef67b9e" />
 
+> Hint: 本作系《東方project》系列二次创作, 原作: ZUN  上海アリス幻楽団
 
 # Bakaford官能团布局 (bushi)
 - [x] CNF Resolver
 - [x] 复系数质点法证明器 (这一版还是纯vibe coding，后面会改)
 - [x] HoTT符号系统的简单建模
 - [x] Incidence几何命题器
-- [x] 基于Clifford Bracket面积法的证明器
+- [x] 基于Clifford Bracket面积法的证明器  
 这里的Bakaford的ford就出自Clifford,没什么特殊意义. 基于Clifford括号的面积法将是Bakaford的主体.
+- [ ] 拉马努冰🧊模拟器
+> - [ ] ~~国士无双max~~ (这大概是一个通用的欧氏几何定理证明器罢 (心虚
