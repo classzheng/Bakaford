@@ -29,11 +29,16 @@ namespace Bakaford {
 	std::uniform_real_distribution<realtype> distneg(-1.L, 0.L);
 	std::uniform_real_distribution<realtype> distpos(0.L, 1.L);
 	const realtype eps=1e-7;
-	volatile int pi_power=0;
-	[[nodiscard]] inline realtype Transcendentalize(const realtype &d) {
-		return std::pow(M_PI,pi_power)*d;
-	}  // Ensure the Linear Independence of each coordinate, cf. https://classzheng.github.io/ (placeholder currently)
-
+	namespace Transcendentalize {
+	  // Ensure the Linear Independence of each coordinate, cf. https://classzheng.github.io/ (placeholder currently)
+		[[nodiscard]] realtype pi_basis(const realtype &d) {
+			return std::pow(M_PI,d);
+		}
+		[[nodiscard]] inline static realtype e_basis(const realtype &d) {
+			return std::pow(M_E,d);
+		}
+	};
+	
 	template<typename type>	class Container {
 		private: std::vector<type> storage;
 	    using value_type = type;
@@ -301,7 +306,7 @@ namespace Bakaford {
 							}
 						}
 						if(index.empty()) {next.push_back(cm); continue;}
-						int i = index[(Transcendentalize(dist(rng))+1.L)/2.L*index.size()], size=cm.factors.size();
+						int i = index[(Transcendentalize::pi_basis(dist(rng))+1.L)/2.L*index.size()], size=cm.factors.size();
 	                    std::cout << e.maintain.bradump() << "=" << e.dump() << "\n";
 	                    episode++;
 						for(auto &et: e.terms) {
@@ -339,7 +344,7 @@ namespace Bakaford {
 		public: [[nodiscard]] Prover& basepoint(Point &p, std::string tag,
 												std::uniform_real_distribution<realtype> dist=distuni) {
 			p.tag=tag;
-			p.specialtype = coord(Transcendentalize(dist(rng)), Transcendentalize(dist(rng)));
+			p.specialtype = coord(Transcendentalize::pi_basis(dist(rng)), Transcendentalize::pi_basis(dist(rng)));
 			conlist.push_back(p);
 			callbacks.push_back([p,dist]([[maybe_unused]] Prover& prov)->void{ return ; });  // Empty eliminator
 			return (*this);
@@ -349,7 +354,7 @@ namespace Bakaford {
 												const Point &p1, const Point &p2, const Point &p3,
 												std::uniform_real_distribution<realtype> dist=distuni) {
 			p.tag=tag;
-			p.specialtype = p1.specialtype * Transcendentalize(dist(rng)) + p2.specialtype * Transcendentalize(dist(rng)) + p3.specialtype * Transcendentalize(dist(rng));
+			p.specialtype = p1.specialtype * Transcendentalize::pi_basis(dist(rng)) + p2.specialtype * Transcendentalize::pi_basis(dist(rng)) + p3.specialtype * Transcendentalize::pi_basis(dist(rng));
 			conlist.push_back(p);
 			callbacks.push_back([p,p1,p2,p3,dist]([[maybe_unused]] Prover& prov)->void{ return ; });  // Empty eliminator
 			return (*this);
@@ -359,7 +364,7 @@ namespace Bakaford {
 												const Point &p1, const Point &p2,
 												std::uniform_real_distribution<realtype> dist=distuni) {
 			p.tag=tag;
-			p.specialtype = p1.specialtype+(p2.specialtype-p1.specialtype)*Transcendentalize(dist(rng));
+			p.specialtype = p1.specialtype+(p2.specialtype-p1.specialtype)*Transcendentalize::pi_basis(dist(rng));
 			
 			Polynomial poly;
 			poly.set(Bracket(p,p1,p2))<<Monomial{{},0.L};
@@ -431,7 +436,6 @@ namespace Bakaford {
 						eliminators.push_back(poly);
 					}
 					if(std::fabs(bra3)<=eps) {
-						std::cout << Point::bradump(p1,p2,is) << Point::bradump(p1,p2,si) << Point::bradump(p3,p4,is) << Point::bradump(p3,p4,si) << "collinear?\n";
 						Polynomial poly;
 						poly.set(Bracket(p,is,si))
 						  << Monomial{{Bracket(p1,p2,is),Bracket(p3,p4,si)}, 1}
