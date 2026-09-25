@@ -1,4 +1,4 @@
-#include "hottreasoner.hpp"
+#include "hottreasoner.deprecated.hpp"
 int main(void) {
 	using namespace Bakaford;
     Reasoner r;
