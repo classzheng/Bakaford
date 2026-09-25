@@ -1,0 +1,140 @@
+# 无类型 λ-演算 笔记
+
+> 最近学了一点无类型 λ-演算的内容，在此稍作整理，如有谬误，恳请指出。
+
+## **语法** *Syntax*
+
+$$
+\lambda\small[\text{param}].[\text{instance}]
+$$
+
+例如 \[λx.xλy.(114y+514)\] ，都是合法的λ-表达式（*aka.* 组合子）
+
+λ-表达式是一个完整的函数，例如对于 \[a:A,b:B\] ， \[λa.b:A→B\] 。一般来说，这里的b应该与a有关，反之则 \[λa.b\] 是关于a的常数函数。注意这里的 \[λa.b\] 是一个函数，如果有 \[f(a)=b,\quad x:A\] ，则 \[\begin{cases} f:=\lambda a.b\\ (\lambda a.b)(x)=f(x) \end{cases}\] ，也就是这个表达式本身与函数等价。
+
+为了节约括号，书写λ-表达式时有这样几条规则
+
+- 在不引起歧义的情况下省略λ-表达式中实参的括号可以省略。所以 \[(λa.b)(c)=(λa.b)c\] 
+- **右结合**，即λ-表达式尽量向右扩展。默认 \[λa.bc\] 是 \[λa.(bc)\] 而不是 \[(λa.b)c\] ， \[λa.λb.c=λa.(λb.c)\] 
+- **柯里化**，多元函数 \[f(a,b,c)=f(a)(b)(c)\] ，反之亦然。不引起歧义的情况下λ-表达式可以有多个参数，如 \[\begin{cases} \lambda ab.c=\lambda a.\lambda b.c\\ \lambda ab.c:A\to (B \to C) \end{cases}\] ，同时应用函数遵循右结合，即 \[(\lambda ab.c)a_*=(\lambda a.\lambda b.c)a_*:B\to C\] 
+
+> 这里柯里化的本质是将实参转为有序数对 (a,b):A×B 
+
+目前我们不考虑这些 λ-表达式 的类型，*真是让人头晕（*
+
+然后还有几个运算规则
+
+- **α-变换**：形参与函数本身无关。有 \[λx.x⇔λy.y\] 
+- **β-规约**：用实参替换形参，这也是λ-演算的本质。 \[λx.Φ(x0)=Φ[x:=x0]\] ，即将Φ中所有x用\[x_0\]替换。
+- **η-扩张**：有时被称为 **η-规约** ，也就是 \[y=λx.(yx)\] ，反之称为规约。
+
+λ-演算虽然十分简单，但是足以完成一些复杂的计算，是和图灵机一样图灵完备的  这里我们将一步步地用λ-演算构建一个比较完整的数理系统。
+
+## **布尔值** *Boolean*
+
+这里要定义真值和假值。考虑 
+$$
+False:=λxy.x\\
+True:=λxy.y
+$$
+
+字面意思来看，这是两个二元选择分支函数，False函数会返回第一个参数，True函数会返回第二个参数。注意这里并没有限定形参的类型，所以我们可以传入各种各样的实参——包括自己。 \[False(True)(False)=True\] 
+
+这样就可以轻松地定义条件分支函数 \[If:=λxfg.x(g)(f)\]
+
+如果x为真的话函数返回f，否则返回 g 。我们就有  
+
+然后就是布尔逻辑里的三个基础运算 
+$$
+and:=λxy.y(x)(False)\\
+or:=λxy.y(x(y)(True))(x)\\
+not:=λx.x(False)(True)
+$$
+然后注意到 \[xor:=λxy.(and(not(and xy))(or xy))\] ，于是异或也构造出来了。
+
+![(ᗜᴗᗜ)](https://pic1.zhimg.com/80/v2-220bf041fa05d3cb81b30deedda9d2ef_720w.gif?source=ccfced1a)
+
+
+> 这里不知道构造出来的布尔逻辑的类型OwQ 除开无类型λ-演算，我们一般用 \[\mathbf2:\equiv\mathbf1+\mathbf1\] ，也就是单位类型的陪积。然后布尔值是 \[0_\mathbf 2, 1_\mathbf 2:\mathbf 2\] 。详见 *资源目前找不到了*
+
+## 自然数 *Natural Numerals*
+
+考虑 Peano公理， 
+$$
+\begin{align} 0&:=\emptyset\\ 1&:=S(0)=S(\emptyset)=S^1(0)\\ 2&:=S(1)=S(S(\emptyset))=S^2(0)\\ 3&:=S(2)=S(S(S(\emptyset)))=S^3(0)\\ \text{etc.} \end{align}
+$$
+
+也就是说，在确定一个起点 \[c_0:\mathbb N\] 后，其它自然数都可以通过多次调用后继函数 ：\[S：\mathbb{N\to N}\] 来递归定义。递归子/归纳子 *cf.* [类型论（type theory）学习笔记 - 知乎](https://zhuanlan.zhihu.com/p/679483353)，此处无关不加赘述。
+
+更进一步，我们连固定的后继函数也不要了，直接传入一个形参作为后继函数。这就是 **Church数**。 
+$$
+\begin{align} \mathbf 0&:=\lambda fx.x\\ \mathbf 1&:=\lambda fx.f(\mathbf 0(f,x))=\lambda fx.f(x)\\ \mathbf 2&:=\lambda fx.f(\mathbf 1(f,x))=\lambda fx.f(f(x))\\ \mathbf 3&:=\lambda fx.f(\mathbf 2(f,x))=\lambda fx.f(f(f(x)))\\ \text{etc.} \end{align}
+$$
+
+所以对于 \[n:\mathbb N\] ， \[\mathbf n:=\lambda fx.f^n(x)\] ，也就是在x上应用n次函数f的函数。
+
+这里参考[从零开始的 λ 演算 | weirane’s blog](https://blog.ruo-chen.wang/2021/04/lambda-calculus-from-the-ground-up.html)，给出C++中的toint代码：
+
+```cpp
+std::function<int(std::function<int(std::function<int(int)>,int)>)> toint = [](std::function<int(std::function<int(int)>,int)> x)->int {
+    return x([](int s)->int{ return s+1; },0);
+};
+```
+
+可惜了C++没有arrow function...
+
+> 这里要注意 \[f^n(x)=\underset{\text{复用n次}}{f\circ f\circ ...\circ f}(x)=\underset{\text{嵌套n层}}{f(f(f(f(...x...))))}\]
+
+然后就很轻松地有加法函数 \[sum:=λxyfc.x(f,y(f,c))\] ，这里展开即得 
+$$
+\begin{align} sum&=\lambda xyfc.x(f,y(f,c))\\ &=\lambda xyfc.x(f,f^{|y|}(c))\\ &=\lambda xyfc.f^{|x|}(f^{|y|}(c))\\ &=\lambda xyfc.f^{|x|+|y|}(c).\\ \end{align}
+$$
+. 然后是乘法函数 \[prod:=λxyfc.x(y(f),c)\] ，有 
+$$
+\begin{align} prod&=\lambda xyfc.x(y(f),c)\\ &=\lambda xyfc.x(f^{|y|},c)\\ &=\lambda xyfc.(f^{|y|})^{|x|}(c)\\ &=\lambda xyfc.f^{|y|\cdot|x|}(c). \end{align}
+$$
+.为了表达方便，暂且令二者可以分别简写为+和×。
+
+然后有后继函数 \[succ:=λx.x+1\]，这里跟引用文件不同：我们是先定义加法函数再定义后继函数的。另一个可行版本是 \[succ:=\lambda fx.f(x);\quad sum:=\lambda xyfc.x(succ)(y(f,c))\] 。
+
+前驱函数pred的构造比较困难，我们的思路是构造列表 \[\mathbf{[0,1,2,...,n]}\] ，然后取列表的倒数第二项 \\mathbf{n-1}\ 。
+
+构造二元组 \[Pair:=λxyf.f(x,y)\] ，凭直觉看是传入了两个数和一个函数（一般是选择器函数，比如True/False，返回两个参数中的一项），然后应用这个函数。
+
+语义上，我们定义一下投射函数 \[\mathsf{pr}_1:=False;\ \mathsf{pr}_2:=True\] 作为选择器。
+
+然后我们需要一个函数构造这个列表，于是定义一个构造子函数， \[Conpair:=\lambda fx.Pair(succ(x,\mathbf1),x,f)\] ，就有 \[Cons:=\lambda n.n(Conpair,\mathbf 0)\] ，即 \[Conpair^{|n|}(0)\] 
+
+> 举个例子， 
+> $$
+\begin{align} Cons(3)&=3(Conpair,\mathbf 0)\\ &=Conpair(Conpair(Conpair(\mathbf 0)))\\ &=Conpair(Conpair(Pair(\mathbf 1,\mathbf 0)))\\ &=Conpair(Pair(\mathbf 2,Pair(\mathbf 1,\mathbf 0)))\\ &=Pair(\mathbf3,Pair(\mathbf 2,Pair(\mathbf 1,\mathbf 0)))\\ \end{align}
+> $$
+>  也就是逆向构造了列表。 由此可见，在λ-演算系统中并没有像图灵机那样拥有内存——所以每次都需要从当前状态重新构造一遍。此外，像Church数本质是一进制之类的弊端都是致命的；实现这个系统的内存开销巨大。
+
+然后 \[pred:=\lambda n.Cons(n)(\mathsf{pr}_2)(\mathsf{pr}_1)\] ，也就是先传入pr2，再传入pr1，不难知道这样取到了倒数第二项。
+
+于是（无符号）减法函数就是 \[diff:=λxy.x(pred,y)\] ，若y>x的话结果为0。
+
+利用这个，我们构造 \[\begin{align} IsZero&:=\lambda x.x(False(False),True)\\ eq&:=\lambda xy. or(IsZero(x-y),IsZero(y-x))\\ leq&:=\lambda xy.IsZero(x-y)\\ geq&:=\lambda xy.IsZero(x-y)\\ \end{align}\] ，这组函数可以判定数的关系并直接转化成布尔值。注意到 \[∀x,False(False)(x)≡False\] 
+
+现在把已经构造完的所有λ-表达式用习惯写法写出来，同时规定：
+
+- if等暂称为关键字，用\mathbf表示
+- 注释用\mathit表示，不参与计算.
+- 假定目前的λ-演算系统允许原始递归（即函数的定义包含自身，这在不允许的情况下用*Y-组合子* 解决）
+
+我们就可以写一个用递推求斐波那契数列某一项的程序：
+$$
+\small{ \begin{align} \mathrm{Fib}=\lambda x.&\mathbf{if}(x==\mathbf1) \mathit{\ then\ }(\\ &\quad\mathit{return\ }\mathbf1\\&)\mathit{\ else\ }(\\ &\quad\mathbf{if}(x==\mathbf2) \mathit{\ then\ }(\\ &\quad\quad\mathit{return\ }\mathbf1\\ &\quad)\mathit{\ else\ }(\\ &\qquad\mathit{return\ }\mathrm{Fib}(x-\mathbf1)+\mathrm{Fib}(x-\mathbf2) \\ &\quad)\\ &)\\ \end{align} }
+$$
+加上缩进之后，我们的程序已经十分接近一些高级语言了。这是它的优势之一。另一个优势是函数式编程。
+
+## Y-组合子 *Y-Combinator*
+
+这里不是我能推导的了（）公式是\[Y=λf.(λx.f(λz.x(x)(z)))(λx.f(λz.x(x)(z)))\] Y-组合子是任何函数的不动点，满足 \[\forall f,\ Yf=f(Yf)=f^\infty(Y\ f)\] 。它解决了匿名函数递归的问题 
+
+这里不加叙述。
+
+## 2026.9.5 补录
+
+我自己在学校手推了一遍，终于把减法函数什么的搞定了。然后手写了一下斐波那契数列的程序。
