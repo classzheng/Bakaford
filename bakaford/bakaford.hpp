@@ -18,7 +18,7 @@
 #include <initializer_list>
 #include <iterator>
 
-// #pragma once
+#pragma once
 #pragma GCC optimize (2)
 namespace Bakaford {
 	using realtype = long double;
