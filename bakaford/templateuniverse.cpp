@@ -14,9 +14,11 @@ int main(void) {
 	
 	std::cout << nat9.integer() << ":" << nat9.what() << "\n";
 	std::cout << nat7.integer() << ":" << nat7.what() << "\n";
+	std::cout << std::boolalpha << "uni.iselement(nat9)= " << uni.iselement(nat9) << "\n";
 	
 	std::cout << nat9.integer() << "+" << nat7.integer() << " == " << (nat9+nat7).integer() << ":" << (nat9+nat7).what() << "\n";
 	std::cout << nat9.integer() << "*" << nat7.integer() << " == " << (nat9*nat7).integer() << ":" << (nat9*nat7).what() << "\n";
 	return 0;
 }
+
 

@@ -53,6 +53,9 @@ namespace Bakaford {
 			public: inline std::string what(void) {
 				return "UniverseOf<"+inst().what()+">";
 			}
+			public: template<typename nt> inline bool iselement(nt s) const {
+				return std::is_same<inst,nt>::value;
+			}
 			public: static constexpr auto subclass=inst::con;
 	  	};
 	  	
@@ -130,7 +133,7 @@ namespace Bakaford {
 				if(proj)  return g1(std::get<i2>(inst));
 			}
 	  	};
-
+		
 	  	class Nat {
 	  		public: std::shared_ptr<Nat> pred;
 			public: static Projection<Nat,Nat> successor;
@@ -169,6 +172,30 @@ namespace Bakaford {
 			}
 	  	};
 	  	Projection<Nat,Nat> Nat::successor([](Nat n)->Nat{return n.succ();});
+
+	  	template<template<typename> class r, typename ut = G0>
+	  	class Mu {  // Recursion type
+	  		public: using self=Mu<r,ut>;
+	  		public: std::shared_ptr<r<self>> inst;
+	  		public: Mu(void) = default;
+	  		public: static Mu con(void) {
+	  			return Mu();
+	  		}
+	  		public: Mu(std::shared_ptr<r<self>> p): inst(std::move(p)) {}
+  		    public: static Mu con(std::shared_ptr<r<self>> p) {
+  		    	return Mu(p);
+  		    }
+	  		public: ~Mu(void) = default;
+  		    public: static Mu fold(const r<self> &v) {
+  		    	return Mu(std::make_shared<r<self>>(v));
+  		    }
+  		    public: r<self> &unfold(void) const {
+  		    	return *inst;
+  		    }
+  		    public: inline std::string what() const {
+  		    	return "Mu<"+r<self>().what()+","+ut().what()+">";
+  		    }
+	  	};
   	};
 
   	namespace Shortcuts {
