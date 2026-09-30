@@ -1,7 +1,7 @@
 /******************************************************************************
  * Bakaford/TemplateUniverse: The implementation of HoTT based on TMP.		  *
  * @Author: classzheng@github                                                 *
- * @Date: 2026.9.26 (latest upd)                                              *
+ * @Date: 2026.9.30 (latest upd)                                              *
  * @Modules: { Bakaford::TemplateUniverse }                                   *
  ******************************************************************************/
 
@@ -23,6 +23,9 @@ namespace Bakaford {
 	  // Unit Types
 		class G0 {
 			public: G0(void) = default;
+			public: static G0 con(void) {
+				return G0();
+			}
 			public: ~G0(void) = default;
 			public: inline std::string what(void) {
 				return "G0";
@@ -30,6 +33,9 @@ namespace Bakaford {
 		};
 		class G1 {
 			public: G1(void) = default;
+			public: static G1 con(void) {
+				return G1();
+			}
 			public: ~G1(void) = default;
 			public: inline std::string what(void) {
 				return "G1";
@@ -38,19 +44,29 @@ namespace Bakaford {
 		
 	  // Universe
 	  	template<typename inst>
-	  	class Universe {
-	  		public: Universe(void) = default;
-	  		public: ~Universe(void) = default;
-			public: inline std::string what(void) {
-				return "Universe<"+inst().what()+">";
+	  	class UniverseOf {
+	  		public: UniverseOf(void) = default;
+			public: static UniverseOf<inst> con(void) {
+				return UniverseOf<inst>();
 			}
+	  		public: ~UniverseOf(void) = default;
+			public: inline std::string what(void) {
+				return "UniverseOf<"+inst().what()+">";
+			}
+			public: static constexpr auto subclass=inst::con;
 	  	};
 	  	
 	  	template<typename i1, typename i2>
 	  	class Projection {
 	  		public: std::function<i2(i1)> func;
 	  		public: Projection(void) = default;
+			public: static Projection<i1,i2> con(void) {
+				return Projection<i1,i2>();
+			}
 	  		public: Projection(std::function<i2(i1)> f): func(f) {}
+			public: static Projection<i1,i2> con(std::function<i2(i1)> f) {
+				return Projection<i1,i2>(f);
+			}
 	  		public: ~Projection(void) = default;
 			public: inline std::string what(void) {
 				return "Projection<"+i1().what()+i2().what()+">";
@@ -64,8 +80,15 @@ namespace Bakaford {
 	  	class Product {
 	  		public: i1 fst;
 	  		public: i2 snd;
+	  		
 	  		public: Product(void) = default;
+			public: static Product<i1,i2> con(void) {
+				return Product<i1,i2>();
+			}
 	  		public: Product(i1 f, i2 s): fst(f), snd(s) {}
+			public: static Product<i1,i2> con(i1 f, i2 s) {
+				return Product<i1,i2>(f,s);
+			}
 	  		public: ~Product(void) = default;
 			public: inline std::string what(void) {
 				return "Product<"+i1().what()+","+i2().what()+">";
@@ -74,7 +97,7 @@ namespace Bakaford {
 			    return f(fst)(snd);
 			}
 			public:
-			inline Universe<ut> inductor(Projection<Product<i1, i2>, Universe<ut>> f) {
+			inline UniverseOf<ut> inductor(Projection<Product<i1, i2>, UniverseOf<ut>> f) {
 			    return f(Product<i1, i2>(fst, snd));
 			}
 	  	};
@@ -90,7 +113,13 @@ namespace Bakaford {
 	  			return Coproduct<i1,i2,ut>(i,true);
 	  		}
 	  		public: Coproduct(void) = default;
+			public: static Coproduct<i1,i2> con(void) {
+				return Coproduct<i1,i2>();
+			}
 	  		public: Coproduct(std::variant<i1,i2> i, bool p): inst(i), proj(p) {}
+			public: static Coproduct<i1,i2> con(std::variant<i1,i2> i, bool p) {
+				return Product<i1,i2>(i,p);
+			}
 	  		public: ~Coproduct(void) = default;
 			public: inline std::string what(void) {
 				return "Coproduct<"+i1().what()+","+i2().what()+">";
@@ -106,6 +135,9 @@ namespace Bakaford {
 	  		public: std::shared_ptr<Nat> pred;
 			public: static Projection<Nat,Nat> successor;
 	  		public: Nat(std::shared_ptr<Nat> p=nullptr): pred(p) {}  // Zero
+			public: static Nat con(std::shared_ptr<Nat> p=nullptr) {
+				return Nat(p);
+			}
 	  		public: ~Nat(void) = default;
 	  		public: inline Nat succ(void) {
 	  			return Nat(std::make_shared<Nat>(*this));
@@ -129,7 +161,24 @@ namespace Bakaford {
 			public: inline std::string what(void) {
 				return "Nat";
 			}
+			public: Nat operator+ (Nat &rhs) {
+				return (*this).church(Nat::successor,rhs);
+			}
+			public: Nat operator* (Nat &rhs) {
+				return (*this).church(rhs.churchnum(),Nat{});
+			}
 	  	};
 	  	Projection<Nat,Nat> Nat::successor([](Nat n)->Nat{return n.succ();});
+  	};
+
+  	namespace Shortcuts {
+  		using namespace TemplateUniverse;
+  		using g0=G0;
+  		using g1=G1;
+  		template<typename p> using uni=UniverseOf<p>;
+  		template<typename p, typename q> using proj=Projection<p,q>;
+  		template<typename p, typename q> using prod=Product<p,q>;
+  		template<typename p, typename q> using coprod=Coproduct<p,q>;
+  		using nat=Nat;
   	};
 };
