@@ -31,11 +31,16 @@ namespace Bakaford {
 	const realtype eps=1e-7;
 	namespace Transcendentalize {
 	  // Ensure the Linear Independence of each coordinate, cf. https://classzheng.github.io/ (placeholder currently)
+	  	[[nodiscard]] inline realtype precision(const realtype s, const realtype e=eps) {
+	  		return std::round(s/e)*e;
+	  	}
 		[[nodiscard]] realtype pi_basis(const realtype &d) {
-			return std::pow(M_PI,d);
+			static realtype pi_power=0;
+			return std::pow(M_PI/precision(M_PI,1e-3),pi_power++)*d;
 		}
-		[[nodiscard]] inline static realtype e_basis(const realtype &d) {
-			return std::pow(M_E,d);
+		[[nodiscard]] realtype e_basis(const realtype &d) {
+			static realtype e_power=0;
+			return std::pow(M_E/precision(M_E,1e-3),e_power++)*d;
 		}
 	};
 	
@@ -480,6 +485,7 @@ namespace Bakaford {
 			if(detail) {
 				std::cout << "\n";
 				for(auto &is: eliminators) std::cout << is.maintain.bradump() << "=" << is.dump() << "\\\\\n";
+				for(auto &is: ord) std::cout << is.tag << is.specialtype << "\n";
 			}
 			std::cout << "\neps: " << eps << "; real eps: " << conc.maintain() << "\n";
 			return conc.eliminate(eliminators,ord,dist);
