@@ -9,6 +9,7 @@
 #include <functional>
 #include <string>
 #include <memory>
+#include <exception>
 #include <variant>
 
 #if __cplusplus<=202000L
@@ -20,47 +21,60 @@
 
 namespace Bakaford {
 	namespace TemplateUniverse {
+		class Type {
+			public: Type(void) = default;
+			public: static Type con(void);
+			public: ~Type(void) = default;
+			public: virtual inline std::string what(void) = 0;
+		};
+		
 	  // Unit Types
-		class G0 {
+		class G0: Type {
 			public: G0(void) = default;
 			public: static G0 con(void) {
 				return G0();
 			}
 			public: ~G0(void) = default;
-			public: inline std::string what(void) {
+			public: virtual inline std::string what(void) {
 				return "G0";
 			}
 		};
-		class G1 {
+		class G1: Type {
 			public: G1(void) = default;
 			public: static G1 con(void) {
 				return G1();
 			}
 			public: ~G1(void) = default;
-			public: inline std::string what(void) {
+			public: virtual inline std::string what(void) {
 				return "G1";
 			}
 		} star;  // \star:\mathbf1
 		
 	  // Universe
 	  	template<typename inst>
-	  	class UniverseOf {
+	  	class UniverseOf: Type {
 	  		public: UniverseOf(void) = default;
 			public: static UniverseOf<inst> con(void) {
 				return UniverseOf<inst>();
 			}
 	  		public: ~UniverseOf(void) = default;
-			public: inline std::string what(void) {
+			public: virtual inline std::string what(void) {
 				return "UniverseOf<"+inst().what()+">";
 			}
 			public: template<typename nt> inline bool iselement(nt s) const {
 				return std::is_same<inst,nt>::value;
 			}
+			public: template<typename residual> static inline inst getinstead(std::variant<inst,residual> nt) {
+				return std::get<inst>(nt);
+			}
+			public: template<typename residual> static inline inst getinstead(std::variant<residual,inst> nt) {
+				return std::get<inst>(nt);
+			}
 			public: static constexpr auto subclass=inst::con;
 	  	};
 	  	
 	  	template<typename i1, typename i2>
-	  	class Projection {
+	  	class Projection: Type {
 	  		public: std::function<i2(i1)> func;
 	  		public: Projection(void) = default;
 			public: static Projection<i1,i2> con(void) {
@@ -71,16 +85,16 @@ namespace Bakaford {
 				return Projection<i1,i2>(f);
 			}
 	  		public: ~Projection(void) = default;
-			public: inline std::string what(void) {
-				return "Projection<"+i1().what()+i2().what()+">";
+			public: virtual inline std::string what(void) {
+				return "Projection<"+i1().what()+","+i2().what()+">";
 			}
 			public: inline i2 operator() (i1& r) {
 				return func(r);
 			}
 	  	};
 	  	
-	  	template<typename i1, typename i2, typename ut=G0>
-	  	class Product {
+	  	template<typename i1, typename i2, typename ut=Type>
+	  	class Product: Type {
 	  		public: i1 fst;
 	  		public: i2 snd;
 	  		
@@ -93,7 +107,7 @@ namespace Bakaford {
 				return Product<i1,i2>(f,s);
 			}
 	  		public: ~Product(void) = default;
-			public: inline std::string what(void) {
+			public: virtual inline std::string what(void) {
 				return "Product<"+i1().what()+","+i2().what()+">";
 			}
 			public: template <typename rs> inline rs reductor(Projection<i1,Projection<i2,rs>> f) {
@@ -105,8 +119,8 @@ namespace Bakaford {
 			}
 	  	};
 	  	
-	  	template<typename i1, typename i2, typename ut=G0>
-	  	class Coproduct {
+	  	template<typename i1, typename i2, typename ut=Type>
+	  	class Coproduct: Type {
 	  		public: bool proj;
 	  		public: std::variant<i1,i2> inst;
 	  		public: static Coproduct<i1,i2,ut> inl(i1 i) {
@@ -124,7 +138,7 @@ namespace Bakaford {
 				return Product<i1,i2>(i,p);
 			}
 	  		public: ~Coproduct(void) = default;
-			public: inline std::string what(void) {
+			public: virtual inline std::string what(void) {
 				return "Coproduct<"+i1().what()+","+i2().what()+">";
 			}
 			public: template <typename rs> 
@@ -134,7 +148,7 @@ namespace Bakaford {
 			}
 	  	};
 		
-	  	class Nat {
+	  	class Nat: Type {
 	  		public: std::shared_ptr<Nat> pred;
 			public: static Projection<Nat,Nat> successor;
 	  		public: Nat(std::shared_ptr<Nat> p=nullptr): pred(p) {}  // Zero
@@ -161,8 +175,21 @@ namespace Bakaford {
 	  			Projection<Nat,Nat> cn([&](Nat n)->Nat{return (*this).church(Nat::successor,n);});
 	  			return cn;
 	  		}
-			public: inline std::string what(void) {
+			public: virtual inline std::string what(void) {
 				return "Nat";
+			}
+			public: template<typename ut = Type>
+			inline UniverseOf<ut> inductor(UniverseOf<ut> z, Projection<UniverseOf<ut>, UniverseOf<ut>> s) const {
+			    UniverseOf<ut> acc = z;
+			    std::shared_ptr<Nat> current = pred;
+			    while (current != nullptr) {
+			        acc = s(acc);
+			        current = current->pred;
+			    }
+			    return acc;
+			}
+			public: inline bool operator== (Nat &rhs) {
+				return rhs.integer()==integer();
 			}
 			public: Nat operator+ (Nat &rhs) {
 				return (*this).church(Nat::successor,rhs);
@@ -173,8 +200,31 @@ namespace Bakaford {
 	  	};
 	  	Projection<Nat,Nat> Nat::successor([](Nat n)->Nat{return n.succ();});
 
-	  	template<template<typename> class r, typename ut = G0>
-	  	class Mu {  // Recursion type
+	  	template<typename r>
+	  	class Identity: Type {
+	  		public: r p, q;
+			public: Identity(void) = default;
+			public: Identity(r a, r b): p(a), q(b) {}
+			public: static Identity<r> con(r a, r b) {
+				return Identity<r>(a,b);
+			}
+			public: ~Identity(void) = default;
+			public: inline std::variant<G0,G1> reflection(void) {
+				if(p == q) return star;
+				else	   return G0();
+			}
+			public: virtual inline std::string what(void) {
+				return "Identity<"+r().what()+">";
+			}
+			public: template<typename ut = Type>
+			inline UniverseOf<ut> inductor(Projection<r, UniverseOf<ut>> reflcase) const {
+				if (p == q) return reflcase(p);
+				return 		UniverseOf<ut>::con();
+			}
+	  	};
+
+	  	template<template<typename> class r, typename ut = Type>
+	  	class Mu: Type {  // Recursion type
 	  		public: using self=Mu<r,ut>;
 	  		public: std::shared_ptr<r<self>> inst;
 	  		public: Mu(void) = default;
@@ -192,7 +242,7 @@ namespace Bakaford {
   		    public: r<self> &unfold(void) const {
   		    	return *inst;
   		    }
-  		    public: inline std::string what() const {
+  		    public: virtual inline std::string what() const {
   		    	return "Mu<"+r<self>().what()+","+ut().what()+">";
   		    }
 	  	};
@@ -206,6 +256,7 @@ namespace Bakaford {
   		template<typename p, typename q> using proj=Projection<p,q>;
   		template<typename p, typename q> using prod=Product<p,q>;
   		template<typename p, typename q> using coprod=Coproduct<p,q>;
+  		template<template<typename> class p, typename q> using mu=Mu<p,q>;
   		using nat=Nat;
   	};
 };
