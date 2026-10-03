@@ -19,7 +19,7 @@ int main(void) {
 
 ![img](https://picx.zhimg.com/80/v2-2206863e66598cef174a75b141b70fc8_720w.png?source=ccfced1a)
 
-也就是原文中取n=3的情况
+> 也就是原文中取n=3的情况
 
 这样的写法也常见于一些外国教材, 譬如 [AoPS Volume-1 Chapter-15 Areas](https://artofproblemsolving.com/) 一章中, 出现了类似三元Clifford括号的写法, 用来表示三角形的面积. 
 
@@ -38,6 +38,7 @@ $$
 所以咱们可以通过这条性质, 将带符号的有向面积表达式直接转化为无向面积（中学范围内理解的面积, 不带符号）表达式, 生成可读性极高的证明. 
 
 ![Figure.⑨](https://picx.zhimg.com/80/v2-18dd83a9a4f28c159c3905140e55f33d_720w.png?source=ccfced1a)
+> Figure.⑨
 
 ## 0. 扩张规则 (Expansion) 和 收缩规则 (Contraction)
 
@@ -50,6 +51,7 @@ $$
 如果咱们把扩张规则里待求的所有三角形都画出来, 会发现刚好可以排成了一个五角星形状的几何图形
 
 ![几何太美妙了](https://picx.zhimg.com/80/v2-810d9c3483d8623469a72829b3e2aa7e_720w.png?source=ccfced1a)
+> 几何太美妙了
 
 这两条规则都是the Grassmann-Plücker relations的推论. 这边搬一下Wolfram上相关的词条：
 
@@ -85,7 +87,7 @@ $$
 
 ![img](https://pic1.zhimg.com/80/v2-cc7fb651e59545e9afa6bf974f506fc3_720w.png?source=ccfced1a)
 
-Desargues Theorem
+> Desargues Theorem
 
 > 两三角形若对应顶点连线共点, 则对应边交点共线. 
 
@@ -110,7 +112,7 @@ Desargues Theorem
 
 ![img](https://picx.zhimg.com/80/v2-a4202dc8a9de84a7fbdf09c15729a25f_720w.png?source=ccfced1a)
 
-论文中的5. A theorem proving algorithm
+> 论文中的5. A theorem proving algorithm
 
 对应的消元规则**E1-E3**的理解并不困难, 咱们可以试着自行推导一下：
 
@@ -126,7 +128,7 @@ Desargues Theorem
 
 ![img](https://pic1.zhimg.com/80/v2-abd04ac240f1e6c35ea8e69af53c8f68_720w.png?source=ccfced1a)
 
-原论文中的E3规则
+> 原论文中的E3规则
 
 论文里的E3规则似乎很复杂, 但仔细一看分类讨论的情况就大悟了（大雾）
 
@@ -136,7 +138,7 @@ Desargues Theorem
 
 ![img](https://picx.zhimg.com/80/v2-9a90eda2302e0820fa488d48ee2ba9fd_720w.png?source=ccfced1a)
 
-这些消元规则咱都仔细检查并检验过了, 误差控制在1e-16范围内
+> 这些消元规则咱都仔细检查并检验过了, 误差控制在1e-16范围内
 
 式 (11) 咱还不太理解, *好在咱可以直接暴力枚举所有情况*😈 后面会提到为什么咱可以仅通过枚举来消元的
 
@@ -205,13 +207,16 @@ public: Prover& intersection(Point &p, std::string tag, const Point &p1, const P
 
 > 这里有一个方法Prover::basepoint, 直译过来就是基点. 这个概念出现在 复系数质点法证明器 中, 这里套用了它的名字. 一般来说, basepoints只有三个, 并且直接为&p分配不重复的随机坐标, 而freepoint方法可以生成异于&p1, &p2, &p3的随机坐标. 咱承认这里画蛇添足, 但这样写下来其实是有一个过程的, 最开始设计程序时就没考虑会写成这样子的. 考古了一下, 最开始使用随机坐标方法时是半个月前, 重构过一版.  *省流：其实就是史山（*
 
-事实上, 仅通过构造一组特例就证明结论是完全不严谨的, 不过这样咱们也有很多好处, 比如
+事实上, 仅通过构造一组特例就给出结论的证明可以是严谨的, cf. 2026.10.02补录. 这样咱们也有很多好处, 比如
 
 ![P3消元规则里的分类讨论, 直接计算bracket的值就可以啦](https://pic1.zhimg.com/80/v2-90467376b4ea238c1d90f66883ee1d63_720w.png?source=ccfced1a)
+> P3消元规则里的分类讨论, 直接计算bracket的值就可以啦
 
 ![P3 式(11) 直接算bracket的结果+输出就可以啦](https://picx.zhimg.com/80/v2-5c045411aa69028c16e7108f194f8053_720w.png?source=ccfced1a)
+> P3 式(11) 直接算bracket的结果+输出就可以啦
 
 ![第 I 版写的代码, 不知道到底要包几层, 其实给个坐标就可以啦](https://picx.zhimg.com/80/v2-6702bafafd159065b7452572b5596192_720w.png?source=ccfced1a)
+> 第 I 版写的代码, 不知道到底要包几层, 其实给个坐标就可以啦
 
 ## 4. 实战开始    
 
@@ -230,6 +235,7 @@ $$
 好吧咱不会证了, 有点吃肝, 并且咱怀疑其中是不是有某一项展开错了导致  没有对应的消元规则, 等咱把自动消元部分代码写完再来挑战. . . 
 
 ![咱琪露诺才是最强哒！(bushi)](https://pica.zhimg.com/80/v2-a1ebad30d20c090136739b07c436255a_720w.jpg?source=ccfced1a)
+> 咱琪露诺才是最强哒！(bushi)
 
 图源 東方幻存神签,  [【【东方PV】恋之冻结·琪露诺温泉【IOSYS】】](https://www.bilibili.com/video/BV1Ms411S7AV/?share_source=copy_web&vd_source=af12d57579aea5cecd55dd69e06f9504)
 
@@ -244,7 +250,25 @@ $$
 - 把所有的“我”改成“咱”, *因为这样子比较チルノ?*（bushi） 这里没有改《吴文俊全集》的原话
 
 ![简要输出, 若调用.qed(conc, true)的话会详细输出所有生成的消元规则, 这里只输出了使用过的消元语句](https://pic1.zhimg.com/80/v2-ed1f5c97c17d40f9af3440f3d3f6cfc4_720w.png?source=ccfced1a)
+> 简要输出, 若调用.qed(conc, true)的话会详细输出所有生成的消元规则, 这里只输出了使用过的消元语句
 
-因为最开始我设定的eps=1e-16太小（虽然也不算小(lll￢ω￢) ）所有很多时候(semi)free points的消元规则不能正确生成——这也确实是直接用一个有理数特例例证的确定. 反复斟酌后取了eps=1e-7, 然后加入判定提示（就是上面的[xxx]...collinear?）可以手动验证是否误判共线——我懒得再写接口去存构图语句了. 
+因为最开始我设定的eps=1e-16太小（虽然也不算小(lll￢ω￢) ）所有很多时候(semi)free points的消元规则不能正确生成——这也确实是直接用一个有理数特例例证的弊病. 反复斟酌后取了eps=1e-7, 然后加入判定提示（就是上面的[xxx]...collinear?）可以手动验证是否误判共线——我懒得再写接口去存构图语句了. 
 
 后面可能会断断续续地修缮, 在这之前我会先把toy style代码重写一遍并加上注释. 
+
+## 2026.10.02 补录
+ - 修改 `2026.0817 补录` 的错误
+ - 将图片alt剔出
+ - 修复部分排版问题
+ - 完成Bakaford证明器大部分功能
+
+我发现通过随机坐标得出的证明是正确的. 虽然说随机坐标可能会满足一定的线性关系而不能保证构造出来的情况是一般的, 从而导致证明含有未被体现在题设中的隐藏条件. 但对应证明的情况的一般性可以通过给坐标乘上超越数幂作为系数来保证. 
+
+根据Lindemann-Weierstrass定理, 即
+
+$$
+\text{对任意不相同的}\alpha_n\in\overline{\mathsf{Tr}},\ 
+\text{序列}e^{\alpha_0}, e^{\alpha_1}, e^{\alpha_2}, ...\text{在有理数上线性无关.}
+$$
+
+易知给坐标乘上超越数\[e^{\alpha_*}\]后各几何量间线性无关(同理也可以证明\[\pi^{\alpha_*}\]的情况). 同时也不难证明欧氏几何中不同几何量存在关系的充要条件是各几何量在有理数上线性相关. 后面我会写一篇新的blogger用来证明和引入LLL算法来试图实现一个通用的证明器.
