@@ -34,13 +34,17 @@ namespace Bakaford {
 	  	[[nodiscard]] inline realtype precision(const realtype s, const realtype e=eps) {
 	  		return std::round(s/e)*e;
 	  	}
+	  	[[nodiscard]] realtype shorten(realtype s) {
+	  		while(std::fabs(s)>=1.L) s/=10.L;
+	  		return s;
+	  	}
 		[[nodiscard]] realtype pi_basis(const realtype &d) {
 			static realtype pi_power=0;
-			return std::pow(M_PI/precision(M_PI,1e-3),pi_power++)*d;
+			return shorten(std::pow(M_PI/precision(M_PI,1e-3),pi_power++)*d);
 		}
 		[[nodiscard]] realtype e_basis(const realtype &d) {
 			static realtype e_power=0;
-			return std::pow(M_E/precision(M_E,1e-3),e_power++)*d;
+			return shorten(std::pow(M_E/precision(M_E,1e-3),e_power++)*d);
 		}
 	};
 	
@@ -281,9 +285,13 @@ namespace Bakaford {
 					if(std::fabs(t.coef-1.L)<=eps) ss << "+";
 					if(std::fabs(t.coef+1.L)<=eps) ss << "-";
 				}
+				bool ex0=false;
 				for(auto &f: t.factors) {
-					if(!f.tautology()) ss << f.bradump(), fullempty=false;
+					if(!f.tautology()) {
+						ss << f.bradump(), fullempty=false;
+					} else ex0=true;
 				}
+				if(ex0) ss << "0";
 				if(std::fabs(t.coef)-1.L>eps) ss << "(" << t.coef << ")";
 				first = false;
 			}
