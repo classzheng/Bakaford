@@ -83,7 +83,7 @@ std::function<int(std::function<int(std::function<int(int)>,int)>)> toint = [](s
 
 可惜了C++没有arrow function...
 
-> 这里要注意 \[f^n(x)=\underset{\text{复用n次}}{f\circ f\circ ...\circ f}(x)=\underset{\text{嵌套n层}}{f(f(f(f(...x...))))}\]
+> 这里要注意 \[f^n(x)=\underset{\text{复用n次}}{\underbrace{f\circ f\circ ...\circ f}}(x)=\underset{\text{嵌套n层}}{\underbrace{f(f(f(f(...x...))))}}\]
 
 然后就很轻松地有加法函数 \[sum:=λxyfc.x(f,y(f,c))\] ，这里展开即得 
 $$
@@ -138,3 +138,7 @@ $$
 ## 2026.9.5 补录
 
 我自己在学校手推了一遍，终于把减法函数什么的搞定了。然后手写了一下斐波那契数列的程序。
+
+## 2026.10.4 补录
+
+修改了\[\underbrace{}\]
