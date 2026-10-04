@@ -1,0 +1,34 @@
+\documentclass{article}
+\title{autoglr.casio}
+\author{@classzheng}
+\date{\today}
+
+\begin{document}
+    \maketitle
+    \section{Implementation of autoglr}
+
+    \begin{aligned}
+        \textbf{Algorithm}\quad\text{Automated Gaussian Lattic Reduction}\\
+        \textbf{Input}\quad\textrm{Two Dim-2 Lattice Basis }\quad{v_1 , v_2}\\
+        \textbf{Output}\quad\textrm{A couple of 2 orthogonalized lattic basis.}\\
+        \textbf{Presets}\quad \mathtt{f(x):=RndFix\left(\frac{x}{|x|+1},0\right)}\\
+        \quad(\mathtt{A},\mathtt{B}):=v_1;\ (\mathtt{C},\mathtt{D}):=v_2\\
+        \textbf{Main program}\\
+        \quad\mathtt{A^2+B^2\rightarrow E:}\qquad\texttt{// Norm of v1}\\
+        \quad\mathtt{C^2+D^2\rightarrow F:}\qquad\texttt{// Norm of v2}\\
+        \texttt{// swap step:}\\
+        \quad\mathtt{Intg\left(\frac{f(E-F)+1}{2}\right)\rightarrow z:}\quad\texttt{// Approach [E>F]}\\
+        \quad\mathtt{A\rightarrow x:\ B\rightarrow y:}\\
+        \quad\mathtt{(1-z)*A+z*C\rightarrow A:}\\
+        \quad\mathtt{(1-z)*B+z*D\rightarrow B:}\\
+        \quad\mathtt{(1-z)*C+z*x\rightarrow C:}\\
+        \quad\mathtt{(1-z)*D+z*y\rightarrow D:}\\
+        \quad\mathtt{0\rightarrow x:\ 0\rightarrow y:}\qquad\texttt{// Reset}\\
+        \texttt{// reduce step:}\\
+        \quad\mathtt{RndFix\left(\frac{A*C+B*D}{A^2+B^2}\right)\rightarrow z:}\\
+        \quad\mathtt{C-z*A\rightarrow C:}\\
+        \quad\mathtt{D-z*B\rightarrow D:}\\
+        \quad\mathtt{f(z)};\texttt{ If f(z)=0, then exit.}
+    \end{aligned}
+
+\end{document}
