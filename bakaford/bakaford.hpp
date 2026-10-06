@@ -1,7 +1,7 @@
 /******************************************************************************
  * Bakaford/Bakaford: A Mechanical Theorem Prover based on Clifford Brackets. *
  * @Author: classzheng@github                                                 *
- * @Date: 2026.8.17 (latest upd)                                              *
+ * @Date: 2026.10.6 (latest upd)                                              *
  * @Reference: https://doi.org/10.1360/za2007-37-5-523                        *
  * @Modules: { Bakaford::Prover }                                             *
  ******************************************************************************/
@@ -28,7 +28,7 @@ namespace Bakaford {
 	std::uniform_real_distribution<realtype> distuni(-1.L, 1.L);
 	std::uniform_real_distribution<realtype> distneg(-1.L, 0.L);
 	std::uniform_real_distribution<realtype> distpos(0.L, 1.L);
-	const realtype eps=1e-7;
+	const realtype eps=1e-16;
 	namespace Transcendentalize {
 	  // Ensure the Linear Independence of each coordinate, cf. https://classzheng.github.io/ (placeholder currently)
 	  	[[nodiscard]] inline realtype precision(const realtype s, const realtype e=eps) {
@@ -40,11 +40,12 @@ namespace Bakaford {
 	  	}
 		[[nodiscard]] realtype pi_basis(const realtype &d) {
 			static realtype pi_power=0;
-			return shorten(std::pow(M_PI/precision(M_PI,1e-3),pi_power++)*d);
+			return shorten(std::pow(M_PI,pi_power++)*d);
+			// return d;
 		}
 		[[nodiscard]] realtype e_basis(const realtype &d) {
 			static realtype e_power=0;
-			return shorten(std::pow(M_E/precision(M_E,1e-3),e_power++)*d);
+			return shorten(std::pow(M_E,e_power++)*d);
 		}
 	};
 	
@@ -254,13 +255,13 @@ namespace Bakaford {
 
 	
 	class Polynomial {
-		public: Bracket maintain;
+		public: Bracket main;
 		public: Container<Monomial> terms;
 		public: Polynomial(void) = default;
-		public: Polynomial(Bracket m): maintain(m) {}
+		public: Polynomial(Bracket m): main(m) {}
 		public: ~Polynomial(void) = default;
 		public: [[nodiscard]] Polynomial& set(const Bracket m) {
-			maintain = m;
+			main = m;
 			return *this;
 		}
 		public: Polynomial& operator<< (const Monomial m) {
@@ -268,11 +269,42 @@ namespace Bakaford {
 			return *this;
 		}
 		public: [[nodiscard]] inline realtype operator() (void) const {
-			return maintain();
+			return main();
+		}
+		public: [[nodiscard]] realtype check(void) {
+			realtype result=0.L;
+			for(auto& is:terms) {
+				result+=is();
+			}
+			return result;
 		}
 		public: [[nodiscard]] inline int operator^ (const Bracket bra) const {
-			if(!maintain.nearmatch(bra)) return 0;
-			return maintain()/bra();
+			if(!main.nearmatch(bra)) return 0;
+			return main()/bra();
+		}
+		
+		public: [[nodiscard]] std::string dump(Container<Monomial> cur) {
+			std::stringstream ss("=");
+			if(cur.empty()) { ss << "0"; return ss.str(); }
+			bool first = true, fullempty=true;
+			for(auto &t: cur) {
+				if(t.empty() || std::fabs(t())<=eps) continue;
+				if(!first) {
+					if(std::fabs(t.coef-1.L)<=eps) ss << "+";
+					if(std::fabs(t.coef+1.L)<=eps) ss << "-";
+				}
+				bool ex0=false;
+				for(auto &f: t.factors) {
+					if(!f.tautology()) {
+						ss << f.bradump(), fullempty=false;
+					} else ex0=true;
+				}
+				if(ex0) ss << "0";
+				if(std::fabs(t.coef)-1.L>eps) ss << "(" << t.coef << ")";
+				first = false;
+			}
+			if(fullempty) ss << "0";
+			return ss.str();
 		}
 		
 		public: [[nodiscard]] std::string dump(void) const {
@@ -305,22 +337,24 @@ namespace Bakaford {
 			Container<Monomial> output;
 			Container<Monomial> work = terms;
 			int episode=0;
-			work.push_back(Monomial{{maintain},1});
+			work.push_back(Monomial{{main},1});
 			for(auto m: work) {
 				if(m.empty()) continue;
 				Container<Monomial> cur{m};
 				for(auto &e: eliminators) {
 					Container<Monomial> next;
+					bool matched=false;
 					for(auto &cm: cur) {
 						Container<int> index;
 						for(int i=0, size=cm.factors.size(); i<size; i++) {
-							if(cm.factors[i].nearmatch(e.maintain)) {
+							if(cm.factors[i].nearmatch(e.main)) {
 								index.push_back(i);
+								matched=true;
 							}
 						}
 						if(index.empty()) {next.push_back(cm); continue;}
 						int i = index[(Transcendentalize::pi_basis(dist(rng))+1.L)/2.L*index.size()], size=cm.factors.size();
-	                    std::cout << e.maintain.bradump() << "=" << e.dump() << "\n";
+	                    std::cout << e.main.bradump() << "=" << e.dump() << "\n";
 	                    episode++;
 						for(auto &et: e.terms) {
 							// if(et.empty()) continue;
@@ -333,6 +367,15 @@ namespace Bakaford {
 						}
 					}
 					cur.swap(next);
+					if(matched) {
+						Container<Monomial> cureq=output;
+						for(auto &fm: cur) {
+							bool bad=false;
+							for(auto &f: fm.factors) if(f.tautology()) { bad=true; break; }
+							if(!bad && !fm.empty()) cureq.push_back(fm);
+						}
+						std::cout << "  ;\t=" << dump(cureq) << "\n";
+					}
 				}
 				for(auto &fm: cur) {
 					bool bad=false;
@@ -341,7 +384,7 @@ namespace Bakaford {
 				}
 			}
 			terms.swap(output);
-			std::cout << "\n" << maintain.bradump() << "=" << dump() << ". □\n";
+			std::cout << "\n" << main.bradump() << "=" << dump() << ". □\n";
 			return episode;
 		}
 	};
@@ -492,10 +535,10 @@ namespace Bakaford {
 			while(!callbacks.empty()) callbacks.back()(*this), callbacks.pop_back();
 			if(detail) {
 				std::cout << "\n";
-				for(auto &is: eliminators) std::cout << is.maintain.bradump() << "=" << is.dump() << "\\\\\n";
+				for(auto &is: eliminators) std::cout << is.main.bradump() << "=" << is.dump() << "\\\\\n";
 				for(auto &is: ord) std::cout << is.tag << is.specialtype << "\n";
 			}
-			std::cout << "\neps: " << eps << "; real eps: " << conc.maintain() << "\n";
+			std::cout << "\neps: " << eps << "; real eps: " << conc.main() << "\n";
 			return conc.eliminate(eliminators,ord,dist);
 		}
 
@@ -508,3 +551,4 @@ namespace Bakaford {
 		}
 	};
 };
+
