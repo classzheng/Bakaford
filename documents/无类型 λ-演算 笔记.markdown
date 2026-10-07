@@ -115,7 +115,7 @@ $$
 
 于是 (无符号) 减法函数就是 \[diff:=λxy.x(pred,y)\] , 若y>x的话结果为0. 
 
-利用这个, 我们构造 \[\begin{align} IsZero&:=\lambda x.x(False(False),True)\\ eq&:=\lambda xy. or(IsZero(x-y),IsZero(y-x))\\ leq&:=\lambda xy.IsZero(x-y)\\ geq&:=\lambda xy.IsZero(x-y)\\ \end{align}\] , 这组函数可以判定数的关系并直接转化成布尔值. 注意到 \[∀x,False(False)(x)≡False\] 
+利用这个, 我们构造 \[\begin{align} IsZero&:=\lambda x.x(False(False),True)\\ eq&:=\lambda xy. or(IsZero(x-y),IsZero(y-x))\\ leq&:=\lambda xy.IsZero(x-y)\\ geq&:=\lambda xy.IsZero(y-x)\\ \end{align}\] , 这组函数可以判定数的关系并直接转化成布尔值. 注意到 \[∀x,False(False)(x)≡False\] 
 
 现在把已经构造完的所有λ-表达式用习惯写法写出来, 同时规定：
 
