@@ -1,4 +1,11 @@
-#include <bits/stdc++.h>
+/******************************************************************************
+ * Bakaford/Icy-Ramanubin: Seems to be written by an Idiot Ice Fairy.         *
+ * @Author: classzheng@github                                                 *
+ * @Date: 2026.10.17 (latest upd)                                             *
+ * @Reference: https://classzheng.github.io/                                  *
+ * @Modules: { Bakaford::Ramanubin }                                          *
+ ******************************************************************************/
+
 #include <algorithm>
 #include <random>
 #include <iostream>
@@ -206,7 +213,7 @@ namespace Bakaford {
 			sequence=std::move(seq);
 		    latbasis.basis.clear();
 		    for(int i = 0; i < sequence.size(); i++){
-		        Bakaford::IcyVector<long double> v(sequence.size()+1,0.L);
+		        Bakaford::IcyVector<Type> v(sequence.size()+1,0.L);
 		        v.vec[i]=1.L;
 		        v.vec[sequence.size()]=std::floor(precision * sequence[i]);
 		        latbasis.basis.push_back(v);

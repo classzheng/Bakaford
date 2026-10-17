@@ -1,3 +1,11 @@
+/******************************************************************************
+ * Bakaford/Icy-Ramanubin: Seems to be written by an Idiot Ice Fairy.         *
+ * @Author: classzheng@github                                                 *
+ * @Date: 2026.10.17 (latest upd)                                             *
+ * @Reference: https://classzheng.github.io/                                  *
+ * @Modules: { Bakaford::Ramanubin }                                          *
+ ******************************************************************************/
+
 #include "icy-ramanubin.hpp"
 using namespace Bakaford;
 int main(){
