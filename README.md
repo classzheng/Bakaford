@@ -14,4 +14,6 @@
 - [x] 基于Clifford Bracket面积法的证明器  
 这里的Bakaford的ford就出自Clifford,没什么特殊意义. 基于Clifford括号的面积法将是Bakaford的主体.
 - [x] 拉马努冰🧊模拟器
-> - [ ] ~~国士无双max~~ (这大概是一个通用的欧氏几何定理证明器罢 (心虚
+> - [ ] ~~国士无双max (FROZEN)~~ (这大概是一个通用的欧氏几何定理证明器罢 (心虚
+- [ ] Bakaford4 STEM  
+尝试将高可读性证明器引入中学数学STEM教育体系.
