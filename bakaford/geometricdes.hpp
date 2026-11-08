@@ -43,5 +43,9 @@ namespace Bakaford {
 		public: Point<Type> pointonline(const Type& cf) {
 			return cf*pnt+(1.L-cf)*qnt;
 		}
+		public: Point<Type> intersection(const Line& l) {
+			Point<Type> p;
+			return p;
+		}
 	};
 };

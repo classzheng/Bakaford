@@ -224,11 +224,11 @@ namespace Bakaford {
 	};
 
 	template<typename Type=realtype> class Drofakab {
-		public: Container<std::function<Quantity<Type>(Quantity<Type>,Quantity<Type>)>> patternadd;
-		public: Container<std::function<Quantity<Type>(Quantity<Type>,Quantity<Type>)>> patternprod;
-		public: Container<Quantity<Type>> addits;
-		public: Container<Quantity<Type>> coefs;
+		public: Container<Container<std::function<Quantity<Type>(Quantity<Type>,Quantity<Type>)>>> patterns;
+		public: Container<Container<Quantity<Type>>> constants;
 		public: Drofakab(void) = default;
+		public: Drofakab(unsigned n): patterns(Container<Container<std::function<Quantity<Type>(Quantity<Type>,Quantity<Type>)>>>(n)),
+									  constants(Container<Container<Quantity<Type>>>(n)) {}
 		public: ~Drofakab(void) = default;
 		public: Quantity<Type> run(Quantity<Type> q, Quantity<Type> q0,
 								   const realtype t0, const realtype cdcoef, const realtype excepteps,
@@ -242,20 +242,18 @@ namespace Bakaford {
 			do {
 				Container<Quantity<Type>> qnexts;
 				Container<realtype> nextprob;
-				for(auto& pat:patternadd) {
-					for(auto& is:addits) {
-						qnexts.push_back(pat(qnew,is));
-					}
-				}
-				for(auto& pat:patternprod) {
-					for(auto& is:coefs) {
-						qnexts.push_back(pat(qnew,is));
+				for(int i = 0; i < patterns.size(); i++) {
+					for(auto& pat:patterns[i]) {
+						for(auto& is:constants[i]) {
+							qnexts.push_back(pat(qnew,is));
+						}
 					}
 				}
 				realtype curenergy=energy(qnew,q);
 				for(auto& is:qnexts) {
-					addits.push_back(is);
-					coefs.push_back(is);
+					for(auto& ct:constants) {
+						ct.push_back(is);
+					}
 					realtype nextenergy=energy(is,q);
 					if(nextenergy-bestenergy<excepteps) {
 						qbest=is;

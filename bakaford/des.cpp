@@ -7,52 +7,49 @@ int main() {  // VibeCoding
     const realtype pi = std::acos(-1.0L);
     const realtype e  = std::exp(1.0L);
 
-    Drofakab<realtype> solver;
+    Drofakab<realtype> solver(1);
 
     // Candidate operations: add a constant, or multiply by a coefficient.
-    solver.patternadd.push_back(
+    solver.patterns[0].push_back(
         [](Quantity<realtype> value, Quantity<realtype> constant) {
             return value + constant;
         }
     );
 
-    solver.patternadd.push_back(
+    solver.patterns[0].push_back(
         [](Quantity<realtype> value, Quantity<realtype> constant) {
             return value - constant;
         }
     );
 
-    solver.patternadd.push_back(
+    solver.patterns[0].push_back(
         [](Quantity<realtype> value, Quantity<realtype> constant) {
             return value * constant;
         }
     );
 
-    solver.patternadd.push_back(
+    solver.patterns[0].push_back(
         [](Quantity<realtype> value, Quantity<realtype> constant) {
             return value / constant;
         }
     );
 
-    solver.patternadd.push_back(
+    solver.patterns[0].push_back(
         [](Quantity<realtype> value, [[maybe_unused]] Quantity<realtype> constant) {
             return value.sqr();
         }
     );
 
-    solver.patternadd.push_back(
+    solver.patterns[0].push_back(
         [](Quantity<realtype> value, [[maybe_unused]] Quantity<realtype> constant) {
             return value.sqrt();
         }
     );
 
     // Constants available to the addition and multiplication patterns.
-    solver.addits.push_back(Quantity<realtype>(pi, "pi"));
-    solver.addits.push_back(Quantity<realtype>(e, "e"));
-    solver.addits.push_back(Quantity<realtype>(9.0L, "9"));
-    solver.coefs.push_back(Quantity<realtype>(pi, "pi"));
-    solver.coefs.push_back(Quantity<realtype>(e, "e"));
-    solver.coefs.push_back(Quantity<realtype>(9.0L, "9"));
+    solver.constants[0].push_back(Quantity<realtype>(pi, "pi"));
+    solver.constants[0].push_back(Quantity<realtype>(e, "e"));
+    solver.constants[0].push_back(Quantity<realtype>(9.0L, "9"));
 
     // Example target: pi, starting from zero.
     const Quantity<realtype> target(1.14514L, "114.5");
