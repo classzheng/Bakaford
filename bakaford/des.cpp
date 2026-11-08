@@ -47,20 +47,22 @@ int main() {  // VibeCoding
     );
 
     // Constants available to the addition and multiplication patterns.
-    solver.addits.push_back(Quantity<realtype>(pi, "pi", 2));
-    solver.addits.push_back(Quantity<realtype>(e, "e", 2));
-    solver.addits.push_back(Quantity<realtype>(9.0L, "9", 2));
-    solver.coefs.push_back(Quantity<realtype>(pi, "pi", 2));
-    solver.coefs.push_back(Quantity<realtype>(e, "e", 2));
-    solver.coefs.push_back(Quantity<realtype>(9.0L, "9", 2));
+    solver.addits.push_back(Quantity<realtype>(pi, "pi"));
+    solver.addits.push_back(Quantity<realtype>(e, "e"));
+    solver.addits.push_back(Quantity<realtype>(9.0L, "9"));
+    solver.coefs.push_back(Quantity<realtype>(pi, "pi"));
+    solver.coefs.push_back(Quantity<realtype>(e, "e"));
+    solver.coefs.push_back(Quantity<realtype>(9.0L, "9"));
 
     // Example target: pi, starting from zero.
-    const Quantity<realtype> target(1.14514L, "114.5", 2);
-    const Quantity<realtype> initial(pi, "pi", 2);
+    const Quantity<realtype> target(1.14514L, "114.5");
+    const Quantity<realtype> initial(e, "e", 1);
 
-    const auto result = solver.run(target, initial, 1.0L, 0.01L);
+    const auto result = solver.run(target, initial, 1.0L, 0.01L, 1e-5, 1);
 
+	using namespace std;
     std::cout << "Target: " << target.data << '\n'
               << "Result: " << result.data << '\n'
-              << "Expression: " << result.desc << '\n';
+              << "Expression: " << result.desc << '\n'
+              << sqrt(sqrt(e))-(sqrt(e)/((e)/((sqrt(e)/sqrt(e))/(sqrt(e)+e))));
 }

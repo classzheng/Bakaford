@@ -29,7 +29,24 @@ namespace Bakaford {
 	const realtype eps=1e-7;
 	
 	namespace Transcendentalize {
-	  // Ensure the Linear Independence of each coordinate, cf. https://classzheng.github.io/ (placeholder currently)
+	  // Ensure the Linear Independence of each coordinate.
+	  	constexpr unsigned primes[]= {
+	  		2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,
+	  		59,61,67,71,73,79,83,89,97,101,103,107,109,
+	  		113,127,131,137,139,149,151,157,163,167,173,
+	  		179,181,191,193,197,199,211,223,227,229,233,
+	  		239,241,251,257,263,269,271,277,281,283,293,
+	  		307,311,313,317,331,337,347,349,353,359,367,
+	  		373,379,383,389,397,401,409,419,421,431,433,
+	  		439,443,449,457,461,463,467,479,487,491,499,
+	  		503,509,521,523,541,547,557,563,569,571,577,
+	  		587,593,599,601,607,613,617,619,631,641,643,
+	  		647,653,659,661,673,677,683,691,701,709,719,
+	  		727,733,739,743,751,757,761,769,773,787,797,
+	  		809,811,821,823,827,829,839,853,857,859,863,
+	  		877,881,883,887,907,911,919,929,937,941,947,
+	  		953,967,971,977,983,991,997,1009,1013,1019,1021
+	  	};
 	  	[[nodiscard]] inline realtype precision(const realtype s, const realtype e=eps) {
 	  		return std::round(s/e)*e;
 	  	}
@@ -38,12 +55,12 @@ namespace Bakaford {
 	  		return s;
 	  	}
 		[[nodiscard]] realtype pi_basis(const realtype &d) {
-			static realtype pi_power=0;
-			return shorten(std::pow(M_PI,pi_power++)*precision(d));
+			static unsigned pi_power=0;
+			return shorten(std::pow(M_PI,primes[pi_power++])*precision(d));
 		}
 		[[nodiscard]] realtype e_basis(const realtype &d) {
-			static realtype e_power=0;
-			return shorten(std::pow(M_E,e_power++)*precision(d));
+			static unsigned e_power=0;
+			return shorten(std::pow(M_E,primes[e_power++])*precision(d));
 		}
 	};
 	
@@ -173,51 +190,36 @@ namespace Bakaford {
 	};  // Written by Github Copilot QwQ
 	
 	template<typename Type> class Quantity {
-		public: int prior;
+		public: int prior{4};
 		public: Type data;
 		public: std::string desc;
 		public: Quantity(void) = default;
-		public: Quantity(const Quantity<Type>& q) : data(q.data), desc(q.desc) {}
-		public: Quantity(Type da, std::string de, int pr=2): data(da), desc(de), prior(pr) {}
+		public: Quantity(const Quantity<Type>& q) : prior(q.prior), data(q.data), desc(q.desc) {}
+		public: Quantity(Type da, std::string de, int pr=4): data(da), desc(de), prior(pr) {}
 		public: ~Quantity(void) = default;
+		public: static std::string operand(const Quantity& q, int opprior) {
+		    return (q.prior<=opprior)? "("+q.desc+")" : q.desc;
+		}
 		public: Quantity operator+ (const Quantity<Type> q) const {
-			return Quantity(data+q.data, desc+"+"+q.desc,0);
+			return Quantity(data+q.data,operand(*this,1)+"+"+operand(q,1),0);
 		}
 		public: Quantity operator- (const Quantity<Type> q) const {
-			return Quantity(data-q.data, desc+"-"+q.desc,0);
+			return Quantity(data-q.data,operand(*this,1)+"-"+operand(q,1),0);
 		}
 		public: Quantity operator* (const Quantity<Type> q) {
-			std::string d1, d2;
-			if(prior<1) d1="("+desc+")";
-			else		d1=desc;
-			if(q.prior<1) d2="("+q.desc+")";
-			else		  d2=q.desc;
-			return Quantity(data*q.data, d1+"*"+d2,1);
+			return Quantity(data*q.data,operand(*this,2)+"*"+operand(q,2),0);
 		}
 		public: Quantity operator/ (const Quantity<Type> q) {
-			std::string d1, d2;
-			if(prior<1) d1="("+desc+")";
-			else		d1=desc;
-			if(q.prior<1) d2="("+q.desc+")";
-			else		  d2=q.desc;
-			return Quantity(data/q.data, d1+"/"+d2,1);
+			return Quantity(data/q.data,operand(*this,2)+"/"+operand(q,2),0);
 		}
 		public: Quantity operator^ (const Quantity<Type> q) {
-			std::string d1, d2;
-			if(prior<2) d1="("+desc+")";
-			else		d1=desc;
-			if(q.prior<2) d2="("+q.desc+")";
-			else		  d2=q.desc;
-			return Quantity(std::pow(data,q.data), d1+"^"+d2,2);
+			return Quantity(std::pow(data,q.data),operand(*this,3)+"^"+operand(q,3),0);
 		}
 		public: Quantity sqr(void) const {
-			std::string d;
-			if(prior<2) d="("+desc+")";
-			else		d=desc;
-			return Quantity(data*data, d+"^2",2);
+			return Quantity(data*data,operand(*this,3)+"^2",3);
 		}
 		public: Quantity sqrt(void) const {
-			return Quantity(std::sqrt(data), "sqrt("+desc+")",2);
+			return Quantity(std::sqrt(data),"sqrt("+desc+")",4);
 		}
 	};
 
@@ -228,7 +230,9 @@ namespace Bakaford {
 		public: Container<Quantity<Type>> coefs;
 		public: Drofakab(void) = default;
 		public: ~Drofakab(void) = default;
-		public: Quantity<Type> run(Quantity<Type> q, Quantity<Type> q0, const realtype t0, const realtype cdcoef) {
+		public: Quantity<Type> run(Quantity<Type> q, Quantity<Type> q0,
+								   const realtype t0, const realtype cdcoef, const realtype excepteps,
+								   const unsigned maxepoch=0) {
 			Quantity<Type> qnew=q0, qbest=q0;
 			static std::function<realtype(Quantity<Type>,Quantity<Type>)> energy=[](Quantity<Type> qcur, Quantity<Type> qtarg)->realtype {
 				return std::fabs((qcur-qtarg).data);
@@ -253,13 +257,13 @@ namespace Bakaford {
 					addits.push_back(is);
 					coefs.push_back(is);
 					realtype nextenergy=energy(is,q);
-					if(nextenergy-bestenergy<eps) {
+					if(nextenergy-bestenergy<excepteps) {
 						qbest=is;
 						bestenergy=nextenergy;
 					}
 					realtype delta=nextenergy-curenergy;
-					if(delta<=eps) nextprob.push_back(1.L);
-					else 		   nextprob.push_back(std::exp(-delta/temperature));
+					if(delta<=excepteps) nextprob.push_back(1.L);
+					else 		   		 nextprob.push_back(std::exp(-delta/temperature));
 				}
 				realtype probsum=0;
 				for(auto& prob:nextprob) probsum+=prob;
@@ -267,7 +271,7 @@ namespace Bakaford {
 					realtype prob=dist(rng)*probsum;
 					for(int i=0;i<nextprob.size();++i) {
 						prob-=nextprob[i];
-						if(prob<=eps) {
+						if(prob<=excepteps) {
 							qnew=qnexts[i];
 							break;
 						}
@@ -278,8 +282,9 @@ namespace Bakaford {
 					bestenergy=energy(qnew,q);
 				}
 				temperature*=cdcoef;
-			} while(temperature>=eps);  // Simulated Annealing
-			return qbest;
+			} while(temperature>=excepteps);  // Simulated Annealing
+			if(bestenergy<=excepteps||maxepoch==0) return qbest;
+			else					  			   return (*this).run(q,q0,t0,cdcoef,excepteps,maxepoch-1);  // Search the better solution
 		}
 	};
 };
