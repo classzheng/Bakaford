@@ -1,0 +1,250 @@
+# 幻想乡最强几何定理证明助手?!
+
+本文前身为 *超越数系数对于Euclidean几何定理的通用化证明方法.markdown*
+
+---
+
+## 0. 引入  
+超越数的定义:   
+> 超越数是指不是任何整系数多项式方程根的数  -- 百度百科词条
+
+例如圆周率\[\pi\], 自然底数\[e\] 都是超越数. 方便起见, 定义集合\[\mathsf{Tr}\]为一切超越数构成的集合, 并认为代数数 (即可以表示为某个整系数多项式方程根的数) 构成的集合为\[\overline{\mathsf{Tr}}\]. 不难证明对于任意\[\lambda,\mu\in\overline{\mathsf{Tr}};\ \nu\in\mathsf{Tr}\] , 满足\[\lambda\cdot\mu\in\overline{\mathsf{Tr}};\ \lambda\cdot\nu\in\mathsf{Tr}\]. 上文提到的\[\pi^n,\ n\in\mathbb Z^+\]当然也是超越数.  
+
+约定随机数的符号是\[\#\mathcal{Ran}_\mathbb F\]. 虽然说大多数科学计算库中提到的随机数生成是在实数域上的 (如 `std::uniform_real_distribution`), 但是受限于机器, 最终也只能转换为高精度浮点数, 所以本质上还是有限不循环的小数. 约定\[\lceil\cdot\rfloor_{\texttt{p}}:\ \mathbb R\to\mathbb F\]  表示对实数进行精度为p的截断近似值, Bakaford中取`p=1e-7`即\[10^{-7}\]. 为了方便表示, 定义浮点数构成的集合\[\mathbb F:=\{x:\exist n\in\mathbb Z.\ x\cdot10^n\in\mathbb Z\}\]也就是有限不循环小数.
+
+引入超越数系数的一个动机是, 生成的随机坐标可能在精度内近似满足某些线性关系, 而这些关系并不会且一般不会被设计者考虑到或被使用者体现在构图语句中. 此时, 生成的证明实际上有额外的条件, 或者说生成的证明不一定正确.于是有
+> 推测: 引入超越数系数的随机坐标之间不存在任何代数数范围内的线性关系.
+
+因为Euclidean几何中并不能直接构造出超越数, 所以生成的随机坐标事实上讨论的是**一般情况**. 虽然随机坐标可以被作为一种证明的参考 (例如Clifford括号证明器中使用随机坐标确定括号多项式的符号), 但是直接用解析几何方法通过讨论随机坐标来证明定理实际上是不严谨的. 通过引入超越数系数, 随机坐标讨论了一般情况, 因此证明过程中在理论上被严格证明并不会出现干扰证明的隐性条件, 也就是说, 引入超越数系数允许直接通过解析几何方法证明随机坐标对应的定理.  
+
+## 1. 超越化随机坐标构成情况的一般性证明  
+
+### 1.1 超越数的定义  
+> $$
+> \textbf{Definition-1.1.1 }\text{一个数称为超越数, 如果它不是任何非零整系数多项式方程的解. }\\\text{i.e. }\forall P:\text{A polynomial function with integer coefficients},\\\exist x.\ P(x)\neq0.\quad P(\alpha)\neq0,\ \text{for }\alpha\in\mathsf{Tr}\qquad(*)
+> $$
+> 给出的等价定义 (*) 将在1.3的证明被用到.
+
+### 1.2 通过Lindemann-Weierstrass定理和Euler公式证明 \[\{\pi,\pi^n\}\subset\mathsf{Tr},\text{ for }n\in\mathbb Z^+\]  
+
+有引理:
+$$
+\begin{aligned}
+&\textbf{Lemma-1.2.1 }\text{代数数集}\overline{\mathsf{Tr}}\text{对加法,减法,乘法,除法均封闭.}\\
+&\textbf{Lemma-1.2.2 (L-W) }\text{对于互异的}\alpha_1,\alpha_2,...,\alpha_n\in\overline{\mathsf{Tr}},\ e^{\alpha_1},e^{\alpha_2},...,e^{\alpha_n}\text{在}\mathbb Q\text{上线性无关.}
+\end{aligned}
+$$
+其中L-W的一个重要推论是
+$$
+\forall \alpha\neq0, \alpha\in\overline{\mathsf{Tr}}.\quad e^\alpha\in\mathsf{Tr}
+$$
+
+Lindemann给出关于\[\pi\in\mathsf{Tr}\]的证明可以简要表述为:
+> \[\textbf{Proof-1.2.1}\quad\] 假设\[\pi\in\overline{\mathsf{Tr}}\], 由\[i\in\overline{\mathsf{Tr}}\]可得\[i\pi\in\overline{\mathsf{Tr}}\]. 又因为\[i\pi\neq0\Rightarrow e^{i\pi}\in\mathsf{Tr}\], 由Euler公式可得\[e^{i\pi}=-1\in\overline{\mathsf{Tr}}\], 矛盾, 所以\[\pi\in\mathsf{Tr}\], 证毕. \[\Box\]
+
+这个证明可以很轻易地拓展到对\[\pi^n\in\mathsf{Tr}\]的情况.
+
+因此有\[\{\pi,\pi^n\}\subset\mathsf{Tr},\text{ for }n\in\mathbb Z^+\].
+
+### 1.3 证明\[\pi^0,\pi^1,...,\pi^n\]在\[\mathbb Q\]上是线性无关的
+
+假设存在一组非零有理数\[a_i\]即满足\[\{a_i:i\in\mathbb Z^+\}\neq\{0\} \]使得\[\sum_{i=0}^n a_i\pi^i=0\], 由有理数的定义可设\[a_i=\frac{p_i}{q_i},\ p_i,q_i\in\mathbb Z\]. 考虑\[P(x):=\sum^n_{i=0} a_i x^i\]. 因为\[\{a_i:i\}\neq\{0\}\], 所以易知\[P(x)\not\equiv0\], 是一个多项式函数, 且\[P(\pi)=0\]. 然后用\[p_i, q_i\]代替\[a_i\]可得  
+$$
+\begin{aligned}
+P(x)&=\sum^n_{i=0} \frac{p_i}{q_i} x^i\\
+    &=\prod_{i=0}^nq_i^{-1}\cdot\sum^n_{i=0} \left(p_i\cdot\prod_{j\neq i}q_j\right) x^i
+\end{aligned}
+$$
+也就是把\[\prod q_i^{-1}\]提取出来, 再记\[Q(x):=\sum^n_{i=0} \left(p_i\cdot\prod_{j\neq i}q_j\right) x^i=P(x)\cdot\prod_{i=0}^n q_i\quad(\gamma)\]. 此时有
+$$
+Q(x)\not\equiv0;\quad Q(\pi)=0\qquad\Rightarrow\quad\pi\not\in\mathsf{Tr}
+$$
+而与\[\textbf{Proof-1.2.1}\ (\pi\in\mathsf{Tr})\]得出的结论矛盾, 故\[\pi^0,\pi^1,...,\pi^n\]在\[\mathbb Q\]上是线性无关的, 证毕.\[\qquad\Box\]
+
+事实上, 以上证明除了\[\pi\]以外也可以证明其它超越数的自然数次幂在\[\mathbb Q\]上线性无关. 也就是
+$$
+\forall \xi\in\mathsf{Tr}.\ LinearIndependent_\mathbb Q(\{\xi^0,\xi^1,\xi^2,...\})\qquad(\tau_0)
+$$
+此外, 又有L-W推出\[e^0,e^1,...,e^n\]在\[\mathbb F\subset\mathbb Q\]上是线性无关的, 这样我们就可以推知\[\forall \#\mathcal{Ran}_{\mathbb F\backslash\{0\}}\in\mathbb F.\ \sum_{i=0} \#\mathcal{Ran}_{\mathbb F\backslash\{0\}}\cdot\pi^i\neq0;\quad\sum_{i=0} \#\mathcal{Ran}_{\mathbb F\backslash\{0\}}\cdot e^i\neq0\]不难. 
+
+也就是不存在随机坐标使得各坐标之间存在线性关系. 
+$$
+\forall \xi\in\mathsf{Tr}.\;\forall \#\mathcal{Ran}_{\mathbb F\backslash\{0\}}\in\mathbb F.\ \sum_{i=0} \#\mathcal{Ran}_{\mathbb F\backslash\{0\}}\cdot\xi^i\neq0
+$$
+下文将证明各几何量间存在线性关系是存在Euclidean几何基本关系的一个充要条件.
+
+### 1.4 证明各几何量间存在线性关系是存在Euclidean几何基本关系的一个充要条件
+
+已知尺规作图五大公法可以构造出Euclidean几何的大部分命题, 这里从这五大公法入手. 其余情况自证 (应该) 不难.
+
+定义线性相关谓词 \[\forall \mathbb X:\text{a set},\ \text{Seq}:\text{a sequence}.\ LinearDependent_\mathbb X(\text{Seq})\Leftrightarrow\neg LinearIndependent_\mathbb X(\text{Seq})\quad(\varepsilon)\]
+
+尺规作图五大公法分别是:
+
+- Ⅰ. 通过两个已知点可作一直线。 
+- Ⅱ. 已知圆心和半径可作一个圆。
+- Ⅲ. 若两已知直线相交，可求其交点。
+- Ⅳ. 若已知直线和一已知圆相交，可求其交点。
+- Ⅴ. 若两已知圆相交，可求其交点。
+
+同时为了方便介绍, 引入部分质点几何记法. 简而言之, 在质点上定义有常规的运算, 并可以通过类如\[M=\frac{A+B}{2}\]表示M是线段AB的中点等经验写法表示另一个点. 这里为了更好理解不妨将点看成一个坐标, 然后质点运算就是对坐标的按位运算. 严格来说, 是将点当成点向量, 而质点运算是对点向量的运算.
+
+![图源GeoGebra](https://www.geogebra.org/resource/rsnnup2v/dzp1ir5GOpx0GYHt/material-rsnnup2v.png)  
+
+有简单的规则\[\tau_1,\ \tau_2\Rightarrow LinearDependent_\mathbb Q(\texttt{Geometric quantities})\]:   
+- 考虑平面上相异的点\[A,\ B\], 则直线\[AB\]上的点\[C\]可表示为\[C=t\cdot A+(1-t)B,\ t\in\mathbb Q\quad\Rightarrow\quad t\cdot A+(1-t)B-C=0.\qquad(\tau_1)\]
+- 考虑屏幕上任意一点\[O\], 在\[\odot O,\ \text{radius = }r\in\mathbb Q\]上的任意一点\[P\]都满足\[OP=r.\qquad(\tau_2)\]
+
+
+
+#### 1.4.1 通过两个已知点可作一直线  
+考虑平面上相异的点\[A,\ B\], 则对直线\[AB\]上的任意点\[C\]均可应用规则\[(\tau_1)\], 推得\[LinearDependent_\mathbb Q(\texttt{coordinates})\].
+
+注意此时在点\[C\]也和点\[A,B\]两两构成了线段\[AB;\ AC;\ BC\], 易知\[\exist\alpha_i\in\pm1.\ \alpha_1 AB+\alpha_2 BC+\alpha_3 AC=0\Rightarrow LinearDependent_\mathbb Q(\texttt{length})\].
+
+#### 1.4.2 已知圆心和半径可作一个圆  
+考虑平面上任意一点\[O\], 对在\[\odot O,\ \text{radius = }r\]上的任意一点\[P\]均可应用规则\[(\tau_2)\], 此时\[OP-r=0\Rightarrow LinearDependent_\mathbb Q(\texttt{length})\].
+
+#### 1.4.3 若两已知直线相交，可求其交点
+
+考虑平面上相异的点\[A,\ B,\ C,\ D\], 则对直线\[AB\], \[CD\]的交点\[P\]可作为\[AB\]上的点和\[CD\]上的点分别应用规则\[(\tau_1)\Rightarrow LinearDependent_\mathbb Q(\texttt{coordinates})\].
+
+#### 1.4.4 若已知直线和一已知圆相交，可求其交点
+
+考虑平面上相异的点\[A,\ B,\ O\], 则对直线\[AB\], \[\odot O\]的交点\[P\]可作为\[AB\]上的点和\[\odot O\]上的点分别应用规则\[(\tau_1),(\tau_2)\Rightarrow LinearDependent_\mathbb Q(\texttt{coordinates/length})\].
+
+#### 1.4.5 若两已知圆相交，可求其交点
+
+考虑平面上相异的点\[O_1,O_2\], 则对\[\odot O_1, \odot O_2\]的交点\[P\]可作为\[\odot O_1,\odot O_2\]上的点分别应用规则\[(\tau_2)\Rightarrow LinearDependent_\mathbb Q(\texttt{length})\].
+
+
+
+#### 1.4.6 归结
+
+以上, 证明了各几何量间存在线性关系是存在Euclidean几何基本关系的一个充要条件.
+$$
+\forall \mathrm{Seq_0}:\text{a sequence}.\ EuclideanRelation(\mathrm{Seq_0})\Leftrightarrow LinearDependent_\mathbb Q(\mathrm{Seq_0})\qquad(\varsigma)
+$$
+这里考虑有理数集\[\mathbb Q\]是因为计算机只能处理浮点数而\[\mathbb Q\supseteq\mathbb F\].
+
+### 1.5 证明超越化随机坐标讨论情况的一般性
+
+考虑在二维Cartesian坐标系, 几何对象点对应着一个坐标. 特殊的, 有坐标系原点\[O(0,0)\].
+
+对于简单的incidence几何部分, 仅需考虑\[LinearDependent_\mathbb Q(\texttt{coordinates})\]即可.
+
+> HI 关联公理(从属公理) 基本关系为点属于直线.我们也沿用习惯用语, 例如点在直线上、直线经过点、 两点的连线、直线相支于一点等等. 
+>
+> ——《吴文俊全集》数学机械化卷IV
+
+> incidence几何即仅考虑 Axiom HI (关联公理) 的几何系统, 例如Desargues定理.![Desargues Theor3m](https://pic1.zhimg.com/80/v2-cc7fb651e59545e9afa6bf974f506fc3_720w.png?source=ccfced1a)
+
+这里因为坐标被乘以一个超越数系数而线性不相关了, 所以不可能存在\[\#\mathcal{Ran}_{\mathbb F\backslash\{0\}}\]生成随机坐标导致该情况存在隐含的incidence几何条件.
+
+在涉及圆的部分中, 涉及了长度的线性相关性. 由\[(\tau_0)\], 不妨假设有\[a_i,\ a_j,\ a_k,\ a_\ell\]使得点\[(i,j),\ (k,\ell)\]的Euclidean距离\[\sqrt{(a_i\pi^i-a_k\pi^k)^2+(a_j\pi^j-a_\ell\pi^\ell)^2}\in\overline{\mathsf{Tr}}\quad\overset{(\tau_0)}{\not\Rightarrow}\quad LinearIndependent_\mathbb Q(\texttt{length})\]. 由于\[\overline{\mathsf{Tr}}\]对平方根运算封闭, 所以有\[(a_i\pi^i-a_k\pi^k)^2+(a_j\pi^j-a_\ell\pi^\ell)^2\in\overline{\mathsf{Tr}}\]. 又因为\[a_i\pi^i-a_k\pi^k=(a_i-a_k\pi^{k-i})\pi^i\in\mathsf{Tr}\]; 同理\[a_j\pi^j-a_\ell\pi^\ell\in\mathsf{Tr}\]. 则 \[(a_i^2\pi^{2i}-2a_i a_k\pi^{i+k}+a_k^2\pi^{2k})+(a_j^2\pi^{2j}-2a_j a_\ell\pi^{j+\ell}+a_\ell^2\pi^{2\ell})\in\overline{\mathsf{Tr}}\]. 显然该式为一个非零有理数 (因为\[\#\mathcal{Ran}_{\mathbb F\backslash\{0\}}\]的值域不包含0). 设\[\textbf{TheDistance}=r=\frac {p_0} {q_0}\in\mathbb Q;\ p,q\in\mathbb Z\], 则存在非零多项式\[P(x)=a_i^2\pi^{2i}-2a_i a_k\pi^{i+k}+a_k^2\pi^{2k}+a_j^2\pi^{2j}-2a_j a_\ell\pi^{j+\ell}+a_\ell^2\pi^{2\ell}-r\], 该多项式可以通过类如\[\textbf{Proof-1.3 }(\gamma)\]通过乘以\[q_0\cdot\prod q^{-1}\]得到非零整系数多项式\[Q(x)\not\equiv0;\ Q(\pi)=0\ \Rightarrow\ \pi\notin\mathsf{Tr}\], 与\[\textbf{Proof-1.2.1}\ (\pi\in\mathsf{Tr})\]得出的结论矛盾, 故 \[\vdash LinearIndependent_\mathbb Q(\texttt{length}).\Box\]  因此不可能存在\[\#\mathcal{Ran}_{\mathbb F\backslash\{0\}}\]生成随机坐标导致该情况存在隐含的Euclidean几何条件.
+
+以上, 证明了超越化随机坐标讨论情况的一般性. 也就是说, 通过给随机坐标乘以一个超越数系数可以使得讨论的情况不存在隐含的几何条件, 因而是一般情况.
+
+通过对坐标的超越化, 我们可以直接用解析几何方法计算待证命题. 这里一般受众是简单的恒等式类Euclidean命题.
+
+### 1.6 能否适用于二次曲线类命题?
+
+考虑如图情形, 假定随机坐标生成函数\[\texttt{TrRand()}\equiv1\], 不考虑\[\texttt{shorten}\]函数作用, 分别引入了两个点 \[A(\pi^1,0) \] 和 \[B(0,\pi^2)\].  过点\[A\]作的一条铅垂线与函数\[f(x):=x^2\]的图象 (抛物线, Parabola) 相交于 \[P(\pi,\pi^2)\]. 此时\[BP\]是一条水平线, 满足\[BP\bot y\text{ axis}\], 而未体现在构图语句中. 事实上, 过x轴上任一点作铅垂线与\[f(x)\]图像交点和y轴上任一点的连线并不一定垂直于y轴.
+
+$$
+\begin{aligned}
+&\texttt{INTRO}\,A(\texttt{TrRand()},0)\\
+&\texttt{INTRO}\,B(0,\texttt{TrRand()})\\
+&\texttt{INTRO}\,\ell. A\in\ell,\,\ell\bot x\text{ axis}\\
+&\texttt{INTRO}\,f(x):=x^2,\ f:\R\to\R\\
+&\texttt{INTERSECTION}\,C\to f\cap \ell\\
+\end{aligned}
+$$
+![image-20261108084611843](M:\Users\19422\AppData\Roaming\Typora\typora-user-images\image-20261108084611843.png)
+
+同理, 包含更高次数的三次函数曲线的命题, 也会出现这样的问题. 归根结底, 是因为这些幂函数图象上取的点\[(m,n)\]满足了\[\frac{n}{m}=\pi^t,\,t\in\mathbb Z\],而与后引入的点的坐标的系数相等, 此时两点的纵坐标满足线性关系. 解决这个问题是使用素数幂而非简单的自然数幂. 
+
+对于素数\[p\], 不存在整数因子\[m,n\]使得\[p=m\cdot n\]. 所以, 幂函数\[f(x):=x^a,\ a\in\mathbb Z\]上的点的纵坐标为\[\left(\mathtt{TrRand()}\cdot\pi^p\right)^a=\left(\mathtt{TrRand()}\right)^a\cdot\pi^{ap}\], 而新引入的点的坐标的系数为\[\pi^q,\ q:\text{a prime}\]. 如使二者相等, 则\[q=ap\], 因为\[q\]是素数, 所以这是不可能的.
+
+因此, 引入素数幂可以解决引入整数幂函数的命题带来的问题.
+
+![image-20261108105432811](M:\Users\19422\AppData\Roaming\Typora\typora-user-images\image-20261108105432811.png)
+
+> Transcendentalize中的素数表, 因为目前找不到优秀的下一个素数算法, ~~于是干脆打表了~~.
+
+
+## 2. 模拟退火算法 (Simulated Annealing) 和 基于SA的反向方程求解器 (Inverse Equation Solver)
+
+### 2.1 模拟退火算法
+
+模拟退火算法 (Simulated Annealing, SA) 是一种优秀的优化算法, 其思路来自于金属冶炼中的 退火 (Annealing) 工艺. SA算法通过在优化问题中引入热力学方程, 允许在温度较高时转移到较差的局部解而非较好的局部最优解, 从而可以摆脱局部最优解的鞍点. 按一定概率接受较差解被称为 Metropolis准则.
+
+SA算法中有几个参数:
+- **温度 (Temperature)**: 控制随机转移概率大小, 用\[T\]表示.
+- **能量 (Energy)**: 衡量状态优劣的量化参数. 一般表示为一个函数\[\Epsilon\], 将当前状态映射为一个实数.
+- **降温系数 (Cooling Coefficient)**: 控制温度缓慢下降的参数, 用\[\alpha\]表示.
+
+在设计基于SA算法的优化器时, 必须考虑以上三个参数. 良好的参数可以获得更好的优化结果.
+
+#### 2.1.1 Metropolis准则
+
+Metropolis准则中, 算法以一定概率接受较差解, 有利于算法摆脱局部最优解. 如果下一个状态优于当前状态的解, 那么就转移到下一个状态.
+
+记当前状态为\[S\], 下一个状态为\[S'\], 则状态转移概率为
+$$
+P(S\to S')=\begin{cases}1\quad&\text{if }S'\text{ is better than }S.\ (\Epsilon(S')<\Epsilon(S))\\\exp\left(-\frac{|\Epsilon(S')-\Epsilon(S)|}{T}\right)\quad&\text{otherwise.}\end{cases}
+$$
+如果有多个\[S'\], 则需要计算转移的联合概率.
+
+在以上公式中, 显然当温度\[T\]越大时, 转移到较差的\[S'\]的概率更高.
+
+#### 2.1.2 降温系数\[\alpha\]
+
+在金属冶炼工业中, 退火工艺的降温过程可以使得金属原子趋于能量更低的有序状态; 反之, 如果降温速率过快, 则冶炼金属的品质往往较差. 当降温系数\[\alpha\]过小时, 模拟退火算法很容易退化成一般贪心算法而很快就陷入局部最优解. 每次转移状态后, 应令温度\[T\to\alpha T\]表示降温, 注意\[\alpha\in[0,1)\].
+
+当 温度\[T\]降至足够小时; 转移状态趋于稳定; 达到指定的优化次数或时间 时, 算法终止.
+
+### 2.2 基于SA的反向方程求解器 (IES)
+
+Bakaford中实现的反向方程求解器是Drofakab Equation Solver (*aka.* D.E.S), ~~这里的Drofakab是⑥, 因为⑨倒了~~
+
+这类被称为IES的Solver往往被戏称为 Ramanujan模拟器 (Ramanujan Emulator), 因为数学史上Ramanujan以发现大量或优美或鄙陋的恒等式命题而著称. IES类似于一种用符号回归拟合数据的程序, 通过输入一个浮点数x, 输出可能满足根为x的方程. Bakaford::DES则是输出该方程的闭式解 (closed form).
+
+![img](data:image/png;base64,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)
+
+> D.E.S给出\[x=1.14514\]一个接近的闭式解, 经检验上式在精度`1e-5`范围内近似等于\[1.14514\]
+
+D.E.S也是利用SA算法进行简单的符号回归的. 类似的产品还有[TuringBot]([TuringBot - Symbolic Regression Software](https://turingbotsoftware.com/)), 不过实际用途不同, 且D.E.S的符号回归能力远弱于TuringBot.
+
+D.E.S中实现的反向方程求解器是\[\texttt{Bakaford::Drofakab}\], 提供了少量接口用于自定义符号模式.
+
+```cpp
+public: Quantity<Type> run(Quantity<Type> q, Quantity<Type> q0,
+                           const realtype t0, const realtype cdcoef, const realtype excepteps,
+                           const unsigned maxepoch=0) {
+```
+
+以上是\[\texttt{Bakaford::Drofakab::run}\], 用来递归退火求解方程. 每个epoch中求解的过程量都会被压入constants数组中作为新的常数项, 因此极其容易爆炸.
+
+`des.cpp`是我用[Github Copilot](https://www.github.com/copilot)辅助编写的简单程序, 可以用常数\[[\pi,e,9]\]拟合\[1.14514\].
+
+D.E.S的能量函数设计为
+```cpp
+static std::function<realtype(Quantity<Type>,Quantity<Type>)> energy=[](Quantity<Type> qcur, Quantity<Type> qtarg)->realtype {
+    return std::fabs((qcur-qtarg).data);
+};
+```
+
+也就是状态和目标状态的差的绝对值.
+
+### 2.3 Geometric D.E.S.
+
+跟该项目的早期实现Ramanubin (使用LLL格基约化算法) 相比, D.E.S的闭式解分解更加具有几何意义. 这意味着, 我们可以通过用所有几何量表示出结果的闭式解来辅助证明. 这种分解类似于Proof Assistants的子目标分解 (Subgoal Decomposition). Ramanubin也可以进行部分具有几何意义的推理, 但能力较弱, 可以作为Geometric D.E.S. 的辅助证明器. 同时我们也可以用Geometric D.E.S.人为验证一些几何猜想并给出可读性 比面积法高 的证明.
+
+施工中, 待续.
+
+### 2.4 Bakaford4 STEM
+
+其实我想把我的证明器引入到STEM教育体系中, 作为开源教育软件引入中学数学素养教育中. 通过求取闭式解进行的子目标分解不仅可以指导证明路径, 而且有时可以推导出与题目无关的其它推论, 也就是中学数学教育中的『模型归纳』. Bakaford4 STEM可以大批量地归纳模型, 总结, 得出推论, 而仅仅只需少量的算力成本.不幸的是, 因为目前Bakaford4 STEM的构图语句的书写门槛较高, 所以可能不得不引入LLM将自然语言的题设转为js代码. 最后该软件将以 \[\mathrm{\{HTML+JS+CSS\}\times HTA}\]的形式发行.
+
+施工中, 待续.
