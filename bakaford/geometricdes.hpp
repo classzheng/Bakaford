@@ -45,6 +45,7 @@ namespace Bakaford {
 		}
 		public: Point<Type> intersection(const Line& l) {
 			Point<Type> p;
+			// your code here...
 			return p;
 		}
 	};

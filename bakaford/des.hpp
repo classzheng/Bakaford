@@ -231,7 +231,7 @@ namespace Bakaford {
 									  constants(Container<Container<Quantity<Type>>>(n)) {}
 		public: ~Drofakab(void) = default;
 		public: Quantity<Type> run(Quantity<Type> q, Quantity<Type> q0,
-								   const realtype t0, const realtype cdcoef, const realtype excepteps,
+								   const realtype t0, const realtype cdcoef, const realtype expecteps,
 								   const unsigned maxepoch=0) {
 			Quantity<Type> qnew=q0, qbest=q0;
 			static std::function<realtype(Quantity<Type>,Quantity<Type>)> energy=[](Quantity<Type> qcur, Quantity<Type> qtarg)->realtype {
@@ -255,12 +255,12 @@ namespace Bakaford {
 						ct.push_back(is);
 					}
 					realtype nextenergy=energy(is,q);
-					if(nextenergy-bestenergy<excepteps) {
+					if(nextenergy-bestenergy<expecteps) {
 						qbest=is;
 						bestenergy=nextenergy;
 					}
 					realtype delta=nextenergy-curenergy;
-					if(delta<=excepteps) nextprob.push_back(1.L);
+					if(delta<=expecteps) nextprob.push_back(1.L);
 					else 		   		 nextprob.push_back(std::exp(-delta/temperature));
 				}
 				realtype probsum=0;
@@ -269,7 +269,7 @@ namespace Bakaford {
 					realtype prob=dist(rng)*probsum;
 					for(int i=0;i<nextprob.size();++i) {
 						prob-=nextprob[i];
-						if(prob<=excepteps) {
+						if(prob<=expecteps) {
 							qnew=qnexts[i];
 							break;
 						}
@@ -280,9 +280,9 @@ namespace Bakaford {
 					bestenergy=energy(qnew,q);
 				}
 				temperature*=cdcoef;
-			} while(temperature>=excepteps);  // Simulated Annealing
-			if(bestenergy<=excepteps||maxepoch==0) return qbest;
-			else					  			   return (*this).run(q,q0,t0,cdcoef,excepteps,maxepoch-1);  // Search the better solution
+			} while(temperature>=expecteps);  // Simulated Annealing
+			if(bestenergy<=expecteps||maxepoch==0) return qbest;
+			else					  			   return (*this).run(q,q0,t0,cdcoef,expecteps,maxepoch-1);  // Search the better solution
 		}
 	};
 };
