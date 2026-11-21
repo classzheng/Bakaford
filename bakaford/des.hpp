@@ -1,7 +1,7 @@
 /******************************************************************************
  * Bakaford/Drofakab Equation Solver (D.E.S): Inverse ⑨                       *
  * @Author: classzheng@github                                                 *
- * @Date: 2026.11.07 (latest upd)                                             *
+ * @Date: 2026.11.21 (latest upd)                                             *
  * @Reference: https://classzheng.github.io/                                  *
  * @Modules: { Bakaford::Drofakab }                                           *
  ******************************************************************************/
@@ -251,9 +251,6 @@ namespace Bakaford {
 				}
 				realtype curenergy=energy(qnew,q);
 				for(auto& is:qnexts) {
-					for(auto& ct:constants) {
-						ct.push_back(is);
-					}
 					realtype nextenergy=energy(is,q);
 					if(nextenergy-bestenergy<expecteps) {
 						qbest=is;
@@ -262,6 +259,10 @@ namespace Bakaford {
 					realtype delta=nextenergy-curenergy;
 					if(delta<=expecteps) nextprob.push_back(1.L);
 					else 		   		 nextprob.push_back(std::exp(-delta/temperature));
+					for(auto& ct:constants) {
+						realtype curpbs=dist(rng);
+						if(curpbs-std::exp(-delta/temperature)<=expecteps) ct.push_back(is);
+					}
 				}
 				realtype probsum=0;
 				for(auto& prob:nextprob) probsum+=prob;

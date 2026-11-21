@@ -1,7 +1,7 @@
 /******************************************************************************
  * Bakaford/Bakaford: A Mechanical Theorem Prover based on Clifford Brackets. *
  * @Author: classzheng@github                                                 *
- * @Date: 2026.10.6 (latest upd)                                              *
+ * @Date: 2026.11.21 (latest upd)                                             *
  * @Reference: https://doi.org/10.1360/za2007-37-5-523                        *
  * @Modules: { Bakaford::Prover }                                             *
  ******************************************************************************/
@@ -29,8 +29,26 @@ namespace Bakaford {
 	std::uniform_real_distribution<realtype> distneg(-1.L, 0.L);
 	std::uniform_real_distribution<realtype> distpos(0.L, 1.L);
 	const realtype eps=1e-16;
+	
 	namespace Transcendentalize {
-	  // Ensure the Linear Independence of each coordinate, cf. https://classzheng.github.io/ (placeholder currently)
+	  // Ensure the Linear Independence of each coordinate.
+	  	constexpr unsigned primes[]= {
+	  		2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,
+	  		59,61,67,71,73,79,83,89,97,101,103,107,109,
+	  		113,127,131,137,139,149,151,157,163,167,173,
+	  		179,181,191,193,197,199,211,223,227,229,233,
+	  		239,241,251,257,263,269,271,277,281,283,293,
+	  		307,311,313,317,331,337,347,349,353,359,367,
+	  		373,379,383,389,397,401,409,419,421,431,433,
+	  		439,443,449,457,461,463,467,479,487,491,499,
+	  		503,509,521,523,541,547,557,563,569,571,577,
+	  		587,593,599,601,607,613,617,619,631,641,643,
+	  		647,653,659,661,673,677,683,691,701,709,719,
+	  		727,733,739,743,751,757,761,769,773,787,797,
+	  		809,811,821,823,827,829,839,853,857,859,863,
+	  		877,881,883,887,907,911,919,929,937,941,947,
+	  		953,967,971,977,983,991,997,1009,1013,1019,1021
+	  	};
 	  	[[nodiscard]] inline realtype precision(const realtype s, const realtype e=eps) {
 	  		return std::round(s/e)*e;
 	  	}
@@ -39,13 +57,12 @@ namespace Bakaford {
 	  		return s;
 	  	}
 		[[nodiscard]] realtype pi_basis(const realtype &d) {
-			static realtype pi_power=0;
-			return shorten(std::pow(M_PI,pi_power++)*d);
-			// return d;
+			static unsigned pi_power=0;
+			return shorten(std::pow(M_PI,primes[pi_power++])*precision(d));
 		}
 		[[nodiscard]] realtype e_basis(const realtype &d) {
-			static realtype e_power=0;
-			return shorten(std::pow(M_E,e_power++)*d);
+			static unsigned e_power=0;
+			return shorten(std::pow(M_E,primes[e_power++])*precision(d));
 		}
 	};
 	
@@ -283,7 +300,7 @@ namespace Bakaford {
 			return main()/bra();
 		}
 		
-		public: [[nodiscard]] std::string dump(Container<Monomial> cur) {
+		public: [[nodiscard]] static std::string dump(Container<Monomial> cur) {
 			std::stringstream ss("=");
 			if(cur.empty()) { ss << "0"; return ss.str(); }
 			bool first = true, fullempty=true;

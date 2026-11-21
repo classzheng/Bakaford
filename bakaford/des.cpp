@@ -6,6 +6,7 @@ int main() {  // VibeCoding
 
     const realtype pi = std::acos(-1.0L);
     const realtype e  = std::exp(1.0L);
+    const realtype phi  = (std::sqrt(5)-1.L)*.5L;
 
     Drofakab<realtype> solver(1);
 
@@ -49,13 +50,14 @@ int main() {  // VibeCoding
     // Constants available to the addition and multiplication patterns.
     solver.constants[0].push_back(Quantity<realtype>(pi, "pi"));
     solver.constants[0].push_back(Quantity<realtype>(e, "e"));
+    solver.constants[0].push_back(Quantity<realtype>(phi, "phi"));
     solver.constants[0].push_back(Quantity<realtype>(9.0L, "9"));
 
     // Example target: pi, starting from zero.
     const Quantity<realtype> target(1.14514L, "114.5");
     const Quantity<realtype> initial(e, "e", 1);
 
-    const auto result = solver.run(target, initial, 1.0L, 0.01L, 1e-6, 1);
+    const auto result = solver.run(target, initial, 1.0L, 0.09L, 1e-6, 1);
 
     std::cout << "Target: " << target.data << '\n'
               << "Result: " << result.data << '\n'
