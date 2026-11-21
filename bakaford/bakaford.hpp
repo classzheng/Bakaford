@@ -243,7 +243,7 @@ namespace Bakaford {
 		public: [[nodiscard]] inline bool tautology(void) const {
 			return p1==p2 || p1==p3 || p2==p3;
 		}
-		public: [[nodiscard]] Bracket inverse(int rhs) const {  // rhs \in ±1
+		public: [[nodiscard]] Bracket inverse(int rhs) const {  // rhs \in \pm1
 			if(rhs==1) return Bracket(p1, p2, p3);
 			else	   return Bracket(p2, p1, p3);
 		}
