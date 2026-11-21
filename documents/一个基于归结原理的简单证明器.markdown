@@ -1,0 +1,242 @@
+# 一个基于归结原理的简单证明器
+
+![img](https://picx.zhimg.com/80/v2-ebac59a6f8720f9123220fa5ffe561ec_720w.png?source=ccfced1a)
+
+> Bakaford中的CNF Resolver, 这里是在证明x1
+
+基于归结原理的证明器不仅收录于[Bakaford](http://github.com/classzheng/bakaford)项目中, 也是我的另一个项目[Rigorous](http://github.com/classzheng/rigorous)的一部分. 因为它确实很简单啊, 所以也是ATP入门的新手教程之一. 通过这个小型demo, 我们能写下自己第一个证明器——这个证明器可以用来证明一些比较简单的一阶逻辑命题. 
+
+因为实在过于简单, 此文篇幅应该不会过长. 
+
+我们自己证明用的是 \[\{x_1\vee x_2,\neg x_1\vee x_3,\neg x_2\vee x_3\}\vdash x_3\] . 因为终端不方便输出数学公式, 所以参照以下对照表:
+
+| 输出符号    | 数学公式的LaTex代码          |
+| ----------- | ---------------------------- |
+| v           | \[\vee\]                     |
+| ~           | \[\neg\]                     |
+| :-          | \[\vdash\]                   |
+| (Tautology) | \[\forall x. P(x)\]          |
+| (Nil)       | \[\varnothing\text或\Box{}\] |
+
+## 1. 归结原理
+
+在开始之前, 我们先明确一些基本概念. 因为不难理解, 所以给一个列表带过. 
+
+- **原子公式** （Atomic Formula） 一个单独的单元, 一般用一个字母表示, 如 \[P,x_1,x_2\] 
+- **子句** （Clause） 是一种一阶逻辑下特殊的逻辑表达式, 由多个原子公式或者其否定的析取 \[\vee\] 组成, 例如 \[x_1\vee x_2\vee\neg x_3\] . 子句本身是恒成立的, 对于 \[a\vee b\] 这个子句, 存在至少一个原子公式是恒真的, 也就是说,  \[\vee\]  对应布尔逻辑中的**逻辑或**, 子句（含有逻辑或运算的式子）的运算结果恒为true, 然后可以反推原子公式的真或假（参数）. 
+- **合取范式** （Conjunctive Normal Form, CNF）是通过合取 \[\wedge\] 连接的各个子句, 这里的合取对应布尔逻辑的**逻辑与** , 此时也可以将CNF认为是恒成立的. 例如 \[(x_1\vee x_2)\wedge(\neg x_1\vee x_2)\] 就是一个CNF. 这个CNF同时也是一个**重言式（Tautology）** , 意思是恒为真的命题. 
+
+这里参考了 [归结原理 - 知乎](https://zhuanlan.zhihu.com/p/8600471928) , 特此感谢. 
+
+有了这些概念后, 我们直接给出一条简单的规则:
+
+>  归结原理:  
+> $$
+> p\vee q,\neg p\vee r\vdash q\vee r\quad(*)
+> $$
+> 意思是, 如果有 \[p\vee q\] 和 \[\neg p\vee r\] , 那么可以推导得出 \[q\vee r\] . 
+
+证明这个规则并不难, 直接列表讨论所有情况就可以啦. 
+
+| 命题q,r \ 命题p存在的情况 | p               | ~p              |
+| ------------------------- | --------------- | --------------- |
+| 命题q可能存在的情况       | \[q\vee\neg q\] | \[q\]           |
+| 命题r可能存在的情况       | \[r\]           | \[r\vee\neg r\] |
+
+不难发现, 讨论的每一种情况都成立, 因此规则 \[(*)\] 得证. 
+
+我们发现, 我们的规则可以消去p, 得到的 \[q\vee r\] 并不含有p. 如果我们对一个是真命题的CNF进行归结的话, 可以不断消去原子公式或其否定, 直到剩下来一个恒为真的子句或者原子公式. 但是如果这个CNF是假命题的话, 那么归结得到的将会是一个空子句(Nil), 因此是恒假的. 我们就可以通过假设待证命题是恒假的, 构造真命题CNF和待证命题的否定的合取, 归结得出空子句, 证明得出构造的合取是恒假的. 通过反证法, 我们知道出现了矛盾, 所以“待证命题恒假”是错误的, 所以待证命题得证. 
+
+这样说可能有点抽象, 我们就拿demo的那个命题来开刀罢. 
+
+### i. 构造CNF
+
+待证命题是x3, 我们构造出x3的否定和原先CNF的合取, 得到 
+$$
+C:=(x_1\vee x_2)\wedge(\neg x_1\vee x_3)\wedge(\neg x_2\vee x_3)\wedge\neg x_3 
+$$
+下一步, 我们证明C是恒假的就可以了. 
+
+### ii. 通过归结原理消去子句
+
+这一步是机械化证明的关键, 我们只需要无脑归结就可以了.  
+$$
+\begin{align}  C=\underline{(x_1\vee x_2)}\wedge\underline{(\neg x_1\vee x_3)}\wedge(\neg x_2\vee x_3)\wedge\neg x_3\quad(1)\\  =\boxed{(x_2\vee x_3)\wedge(\neg x_2\vee x_3)}\wedge\neg x_3\quad(2)\\  =x_3\wedge\neg x_3\quad(4)\\ =\Box\quad(5) \end{align}
+$$
+ 在 (1) 和 (2) 中, 我们分别对下划线子句和框内子句运用规则 \[(*)\] , 依次消去\[x_1, x_2\]. 在 (3) 中我们已经发现矛盾了,  \[x_3\wedge\neg x_3\] 不符合排中律. 为了减轻计算机复杂规则识别的负担, 我们直接改写成 \[(x_3\vee\varnothing)\wedge(\neg x_3\vee\varnothing)\] , 然后就能再用一次归结原理了. 可见归结原理对排中律也是有效的. 
+
+程序似乎不是这样子做的. 看看截图
+
+![img](https://picx.zhimg.com/80/v2-ebac59a6f8720f9123220fa5ffe561ec_720w.png?source=ccfced1a)
+
+这里其实是在证明x1, 并且cnf里多了一个~x3, 懒得改了
+
+程序没有人类这样的直觉, 它做的只是不断枚举可能的两个子句并一一归结, 穷举出可能的证明路径. 当然, 有很多有意思的原子公式也在证明过程中爆了出来, 比如说x2和~x1. 
+
+看看代码片段
+
+```
+public: ClauseIndex run(ClauseIndex t) {
+        int oldSize = 0;
+        this->add(Clause({-t}));
+        while(oldSize != axioms.size()) {
+            oldSize = axioms.size();
+            for(int i=0; i<axioms.size(); i++) {
+                for(int j=i+1; j<axioms.size(); j++) {
+                    ClauseIndex res = resolve(i, j);
+                    if(res != -1 && axioms[res].empty()) return res;
+                }
+            }
+        }
+        return -1;
+    }
+```
+
+确实是穷举啊. 这里没有写回溯优化, 有兴趣的读者可以试着提交PR:
+
+## 2. 没有了
+
+真没有了. 这个确实很简单, 一般来说你指使ai给你写个atp demo大概率也会写个归结原理证明器. 其实我写的很大一部分也是vibe coding. 
+
+```
+/******************************************************************************
+ * Bakaford/cnfresolver: A Theorem Prover based on Resolution Priciple        *
+ * @Author: classzheng@github                                                 *
+ * @Date: 2026.5.31 (latest upd)                                              *
+ * @Description: 															  *
+ * @Modules: {}                                                               *
+ ******************************************************************************/
+ 
+#pragma once
+#pragma GCC optimize (2)
+
+#include <algorithm>
+#include <iostream>
+#include <sstream>
+#include <vector>
+using ClauseIndex = int;
+class Clause {
+    public: std::vector<ClauseIndex> lits;
+    public: bool taut = false;  // Shrinking.
+
+    public: Clause() = default;
+    public: Clause(std::vector<ClauseIndex> v) {
+        std::sort(v.begin(), v.end());
+        v.erase(std::unique(v.begin(), v.end()), v.end());
+        for (ClauseIndex &x : v) {
+            if (std::binary_search(v.begin(), v.end(), -x)) { taut = true; lits.clear(); return; }
+        }
+        lits = std::move(v);
+    }
+    public: Clause(const ClauseIndex v1, const ClauseIndex v2, bool) {
+        std::vector<ClauseIndex> v={-v1,v2};  // v1 -> v2:= ~v1 v v2
+        std::sort(v.begin(), v.end());
+        v.erase(std::unique(v.begin(), v.end()), v.end());
+        for (ClauseIndex &x : v) {
+            if (std::binary_search(v.begin(), v.end(), -x)) { taut = true; lits.clear(); return; }
+        }
+        lits = std::move(v);
+    }
+    public: Clause(const ClauseIndex v1, const ClauseIndex v2, float) {
+        std::vector<ClauseIndex> v={-v1,v2, -v2,v1};  // v1 ^ v2:= (~v1 v v2) v (~v2 v v1)
+        std::sort(v.begin(), v.end());
+        v.erase(std::unique(v.begin(), v.end()), v.end());
+        for (ClauseIndex &x : v) {
+            if (std::binary_search(v.begin(), v.end(), -x)) { taut = true; lits.clear(); return; }
+        }
+        lits = std::move(v);
+    }
+    public: inline bool empty(void) const {
+        return !taut&&lits.empty();
+    }
+    public: std::string literal(void) {
+        if(taut)    return "(Tautology)";
+        if(empty()) return "(Nil)";
+        std::stringstream s;
+        for (int i=0; i<lits.size(); i++) {
+            ClauseIndex x = lits[i];
+            if (x<0) s << "~";
+            s << "x" << std::to_string(std::abs(x));
+            if (i<lits.size()-1) s << " v ";
+        }
+        s << ")";
+        return "("+s.str();
+    }
+    public: bool subset(const Clause &other) const {
+        ClauseIndex i=0,j=0;
+        while (i<lits.size() && j<other.lits.size()) {
+            if (lits[i]==other.lits[j]) { ++i; ++j; }
+            else if (lits[i]>other.lits[j]) ++j;
+            else return false;
+        }
+        return i==lits.size();
+    }
+};
+
+class Resolver {
+    public: std::vector<Clause> axioms;
+    public: Resolver(void) = default;
+    public: ~Resolver(void) = default;
+    public: void add(const Clause& cl) {
+        if(cl.taut)    return ;
+        axioms.push_back(cl);
+        return ;
+    }
+    public: ClauseIndex resolve(ClauseIndex idx1, ClauseIndex idx2) {
+        Clause& cl1 = axioms[idx1];
+        Clause& cl2 = axioms[idx2];
+        if(cl1.taut || cl2.taut) return -1;
+        if(cl1.empty() || cl2.empty()) return -1;
+        int pivot = 0;
+        bool found = false;
+        for(ClauseIndex lit:cl1.lits) {
+            if(std::binary_search(cl2.lits.begin(), cl2.lits.end(), -lit)) {
+                pivot = lit;
+                found = true;
+                break;
+            }
+        }
+        if(!found) return -1;
+        std::vector<ClauseIndex> newlits;
+        for(ClauseIndex lit : cl1.lits) if(lit != pivot) newlits.push_back(lit);
+        for(ClauseIndex lit : cl2.lits) if(lit != -pivot) newlits.push_back(lit);
+        Clause result(newlits);
+        if(result.taut) return -1;
+        for (auto& cl : axioms) if (cl.subset(result)) return -1;
+        std::cout << "{" << cl1.literal() << ", " << cl2.literal() << "} :- " << result.literal() << ".\n";
+        add(result);
+        return axioms.size() - 1;
+    }
+    public: ClauseIndex run(ClauseIndex t) {
+        int oldSize = 0;
+        this->add(Clause({-t}));
+        while(oldSize != axioms.size()) {
+            oldSize = axioms.size();
+            for(int i=0; i<axioms.size(); i++) {
+                for(int j=i+1; j<axioms.size(); j++) {
+                    ClauseIndex res = resolve(i, j);
+                    if(res != -1 && axioms[res].empty()) return res;
+                }
+            }
+        }
+        return -1;
+    }
+    public: void dump(void) {
+    	for(auto& is:axioms) {
+    		std::cout << is.literal() << "\n";
+    	}
+    }
+};
+int main(void) {
+    Resolver solver;
+    solver.add(Clause({1,2}));  // x1 v x2
+    solver.add(Clause({-1,3})); // ~x1 v x3
+    solver.add(Clause({-2,3})); // ~x2 v x3
+    solver.add(Clause({-3}));   // ~x3
+    solver.dump();
+    std::cout << (solver.run(1) == -1 ? 0 : 1);
+	return 0;
+}
+```
+
+总计也就百来行, 读者可以自己试着写一写, 算是给自己一点成就感罢. 
