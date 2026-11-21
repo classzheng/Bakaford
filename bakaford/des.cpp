@@ -57,7 +57,7 @@ int main() {  // VibeCoding
     const Quantity<realtype> target(1.14514L, "114.5");
     const Quantity<realtype> initial(e, "e", 1);
 
-    const auto result = solver.run(target, initial, 1.0L, 0.09L, 1e-6, 1);
+    const auto result = solver.run(target, initial, 1.0L, 0.01L, 1e-6, 1);
 
     std::cout << "Target: " << target.data << '\n'
               << "Result: " << result.data << '\n'

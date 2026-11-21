@@ -257,8 +257,8 @@ namespace Bakaford {
 						bestenergy=nextenergy;
 					}
 					realtype delta=nextenergy-curenergy;
-					if(delta<=expecteps) nextprob.push_back(1.L);
-					else 		   		 nextprob.push_back(std::exp(-delta/temperature));
+					if(std::fabs(delta)<=expecteps) nextprob.push_back(1.L);
+					else 		   		 			nextprob.push_back(std::exp(-delta/temperature));
 					for(auto& ct:constants) {
 						realtype curpbs=dist(rng);
 						if(curpbs-std::exp(-delta/temperature)<=expecteps) ct.push_back(is);
