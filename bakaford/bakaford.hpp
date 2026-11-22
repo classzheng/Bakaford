@@ -5,7 +5,36 @@
  * @Reference: https://doi.org/10.1360/za2007-37-5-523                        *
  * @Modules: { Bakaford::Prover }                                             *
  ******************************************************************************/
-
+ 
+#if false
+//                            ??/
+"⠀⠀⣠⠤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⠀⠀    ??/
+⠀⠀⡜⠁⠀⠈⢢⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⠋⠷⠶⠱⡄    ??/
+⠀⢸⣸⣿⠀⠀⠀⠙⢦⡀⠀⠀⠀⠀⠀⠀⠀⢀⡴⠫⢀⣖⡃⢀⣸⢹    ??/
+⠀⡇⣿⣿⣶⣤⡀⠀⠀⠙⢆⠀⠀⠀⠀⠀⣠⡪⢀⣤⣾⣿⣿⣿⣿⣸    ??/
+⠀⡇⠛⠛⠛⢿⣿⣷⣦⣀⠀⣳⣄⠀⢠⣾⠇⣠⣾⣿⣿⣿⣿⣿⣿⣽    ??/
+⠀⠯⣠⣠⣤⣤⣤⣭⣭⡽⠿⠾⠞⠛⠷⠧⣾⣿⣿⣯⣿⡛⣽⣿⡿⡼    ??/
+⠀⡇⣿⣿⣿⣿⠟⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠻⣿⣿⣮⡛⢿⠃    ??/
+⠀⣧⣛⣭⡾⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢿⣿⣷⣎⡇    ??/
+⠀⡸⣿⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢿⣷⣟⡇    ??/
+⣜⣿⣿⡧⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⣄⠀⠀⠀⠀⠀⣸⣿⡜⡄    ??/
+⠉⠉⢹⡇⠀⠀⠀⢀⣞⠡⠀⠀⠀⠀⠀⠀⡝⣦⠀⠀⠀⠀⢿⣿⣿⣹    ??/
+⠀⠀⢸⠁⠀⠀⢠⣏⣨⣉⡃⠀⠀⠀⢀⣜⡉⢉⣇⠀⠀⠀⢹⡄⠀⠀    ??/
+⠀⠀⡾⠄⠀⠀⢸⣾⢏⡍⡏⠑⠆⠀⢿⣻⣿⣿⣿⠀⠀⢰⠈⡇⠀⠀    ??/
+⠀⢰⢇⢀⣆⠀⢸⠙⠾⠽⠃⠀⠀⠀⠘⠿⡿⠟⢹⠀⢀⡎⠀⡇⠀⠀    ??/
+⠀⠘⢺⣻⡺⣦⣫⡀⠀⠀⠀⣄⣀⣀⠀⠀⠀⠀⢜⣠⣾⡙⣆⡇⠀⠀    ??/
+⠀⠀⠀⠙⢿⡿⡝⠿⢧⡢⣠⣤⣍⣀⣤⡄⢀⣞⣿⡿⣻⣿⠞⠀⠀⠀    ??/
+⠀⠀⠀⢠⠏⠄⠐⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠳⢤⣉⢳⠀⠀⠀    ??/
+⢀⡠⠖⠉⠀⠀⣠⠇⣿⡿⣿⡿⢹⣿⣿⣿⣿⣧⣠⡀⠀⠈⠉⢢⡀⠀    ??/
+⢿⠀⠀⣠⠴⣋⡤⠚⠛⠛⠛⠛⠛⠛⠛⠛⠙⠛⠛⢿⣦⣄⠀⢈⡇⠀    ??/
+⠈⢓⣤⣵⣾⠁⣀⣀⠤⣤⣀⠀⠀⠀⠀⢀⡤⠶⠤⢌⡹⠿⠷⠻⢤⡀    ??/
+⢰⠋⠈⠉⠘⠋⠁⠀⠀⠈⠙⠳⢄⣀⡴⠉⠀⠀⠀⠀⠙⠂⠀⠀⢀⡇    ??/
+⢸⡠⡀⠀⠒⠂⠐⠢⠀⣀⠀⠀⠀⠀⠀⢀⠤⠚⠀⠀⢸⣔⢄⠀⢾⠀    ??/
+⠀⠑⠸⢿⠀⠀⠀⠀⢈⡗⠭⣖⡒⠒⢊⣱⠀⠀⠀⠀⢨⠟⠂⠚⠋⠀    ??/
+⠀⠀⠀⠘⠦⣄⣀⣠⠞⠀⠀⠀⠈⠉⠉⠀⠳⠤⠤⡤⠞⠀       "??/
+      FUMOFUMOFUMO            ??/
+i would like to say that i was on purpose.
+#endif
 
 #include <algorithm>
 #include <random>
@@ -56,12 +85,16 @@ namespace Bakaford {
 	  		while(std::fabs(s)>=1.L) s/=10.L;
 	  		return s;
 	  	}
-		[[nodiscard]] realtype pi_basis(const realtype &d) {
+		[[nodiscard]] realtype pi_basis(std::uniform_real_distribution<realtype> &dist, std::mt19937 &rng) {
 			static unsigned pi_power=0;
+			realtype d=0.L;
+			do d=dist(rng); while(std::fabs(d)<=eps);
 			return shorten(std::pow(M_PI,primes[pi_power++])*precision(d));
 		}
-		[[nodiscard]] realtype e_basis(const realtype &d) {
+		[[nodiscard]] realtype e_basis(std::uniform_real_distribution<realtype> &dist, std::mt19937 &rng) {
 			static unsigned e_power=0;
+			realtype d=0.L;
+			do d=dist(rng); while(std::fabs(d)<=eps);
 			return shorten(std::pow(M_E,primes[e_power++])*precision(d));
 		}
 	};
@@ -370,7 +403,8 @@ namespace Bakaford {
 							}
 						}
 						if(index.empty()) {next.push_back(cm); continue;}
-						int i = index[(Transcendentalize::pi_basis(dist(rng))+1.L)/2.L*index.size()], size=cm.factors.size();
+						int i = index[(Transcendentalize::pi_basis(dist,rng)+1.L)/2.L*index.size()],
+							size=cm.factors.size();
 	                    std::cout << e.main.bradump() << "=" << e.dump() << "\n";
 	                    episode++;
 						for(auto &et: e.terms) {
@@ -417,7 +451,8 @@ namespace Bakaford {
 		public: [[nodiscard]] Prover& basepoint(Point &p, std::string tag,
 												std::uniform_real_distribution<realtype> dist=distuni) {
 			p.tag=tag;
-			p.specialtype = coord(Transcendentalize::pi_basis(dist(rng)), Transcendentalize::pi_basis(dist(rng)));
+			p.specialtype = coord(Transcendentalize::pi_basis(dist,rng), 
+								  Transcendentalize::pi_basis(dist,rng));
 			conlist.push_back(p);
 			callbacks.push_back([p,dist]([[maybe_unused]] Prover& prov)->void{ return ; });  // Empty eliminator
 			return (*this);
@@ -427,7 +462,9 @@ namespace Bakaford {
 												const Point &p1, const Point &p2, const Point &p3,
 												std::uniform_real_distribution<realtype> dist=distuni) {
 			p.tag=tag;
-			p.specialtype = p1.specialtype * Transcendentalize::pi_basis(dist(rng)) + p2.specialtype * Transcendentalize::pi_basis(dist(rng)) + p3.specialtype * Transcendentalize::pi_basis(dist(rng));
+			p.specialtype = p1.specialtype * Transcendentalize::pi_basis(dist,rng) +
+			 				p2.specialtype * Transcendentalize::pi_basis(dist,rng) +
+			 				p3.specialtype * Transcendentalize::pi_basis(dist,rng);
 			conlist.push_back(p);
 			callbacks.push_back([p,p1,p2,p3,dist]([[maybe_unused]] Prover& prov)->void{ return ; });  // Empty eliminator
 			return (*this);
@@ -437,7 +474,7 @@ namespace Bakaford {
 												const Point &p1, const Point &p2,
 												std::uniform_real_distribution<realtype> dist=distuni) {
 			p.tag=tag;
-			p.specialtype = p1.specialtype+(p2.specialtype-p1.specialtype)*Transcendentalize::pi_basis(dist(rng));
+			p.specialtype = p1.specialtype+(p2.specialtype-p1.specialtype)*Transcendentalize::pi_basis(dist,rng);
 			
 			Polynomial poly;
 			poly.set(Bracket(p,p1,p2))<<Monomial{{},0.L};
