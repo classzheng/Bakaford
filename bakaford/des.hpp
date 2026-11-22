@@ -223,24 +223,24 @@ namespace Bakaford {
 		}
 	};
 
-	template<typename Type=realtype> class Drofakab {
-		public: Container<Container<std::function<Quantity<Type>(Quantity<Type>,Quantity<Type>)>>> patterns;
-		public: Container<Container<Quantity<Type>>> constants;
+	class Drofakab {
+		public: Container<Container<std::function<Quantity<realtype>(Quantity<realtype>,Quantity<realtype>)>>> patterns;
+		public: Container<Container<Quantity<realtype>>> constants;
 		public: Drofakab(void) = default;
-		public: Drofakab(unsigned n): patterns(Container<Container<std::function<Quantity<Type>(Quantity<Type>,Quantity<Type>)>>>(n)),
-									  constants(Container<Container<Quantity<Type>>>(n)) {}
+		public: Drofakab(unsigned n): patterns(Container<Container<std::function<Quantity<realtype>(Quantity<realtype>,Quantity<realtype>)>>>(n)),
+									  constants(Container<Container<Quantity<realtype>>>(n)) {}
 		public: ~Drofakab(void) = default;
-		public: Quantity<Type> run(Quantity<Type> q, Quantity<Type> q0,
+		public: Quantity<realtype> run(Quantity<realtype> q, Quantity<realtype> q0,
 								   const realtype t0, const realtype cdcoef, const realtype expecteps,
 								   const unsigned maxepoch=0) {
-			Quantity<Type> qnew=q0, qbest=q0;
-			static std::function<realtype(Quantity<Type>,Quantity<Type>)> energy=[](Quantity<Type> qcur, Quantity<Type> qtarg)->realtype {
+			Quantity<realtype> qnew=q0, qbest=q0;
+			static std::function<realtype(Quantity<realtype>,Quantity<realtype>)> energy=[](Quantity<realtype> qcur, Quantity<realtype> qtarg)->realtype {
 				return std::fabs((qcur-qtarg).data);
 			};
 			realtype temperature=t0;
 			realtype bestenergy=energy(qbest,q);
 			do {
-				Container<Quantity<Type>> qnexts;
+				Container<Quantity<realtype>> qnexts;
 				Container<realtype> nextprob;
 				for(int i = 0; i < patterns.size(); i++) {
 					for(auto& pat:patterns[i]) {
@@ -263,6 +263,60 @@ namespace Bakaford {
 						realtype curpbs=dist(rng);
 						if(curpbs-std::exp(-delta/temperature)<=expecteps) ct.push_back(is);
 					}
+				}
+				realtype probsum=0;
+				for(auto& prob:nextprob) probsum+=prob;
+				if(probsum>eps) {
+					realtype prob=dist(rng)*probsum;
+					for(int i=0;i<nextprob.size();++i) {
+						prob-=nextprob[i];
+						if(prob<=expecteps) {
+							qnew=qnexts[i];
+							break;
+						}
+					}
+				}
+				if(energy(qnew,q)<bestenergy) {
+					qbest=qnew;
+					bestenergy=energy(qnew,q);
+				}
+				temperature*=cdcoef;
+			} while(temperature>=expecteps);  // Simulated Annealing
+			if(bestenergy<=expecteps||maxepoch==0) return qbest;
+			else					  			   return (*this).run(q,q0,t0,cdcoef,expecteps,maxepoch-1);  // Search the better solution
+		}
+		public: Quantity<realtype> ultrarun(Quantity<realtype> q, Quantity<realtype> q0,
+								   			const realtype t0, const realtype cdcoef, const realtype expecteps,
+								   			const unsigned maxepoch=0) {
+			Quantity<realtype> qnew=q0, qbest=q0;
+			static std::function<realtype(Quantity<realtype>,Quantity<realtype>)> energy=[](Quantity<realtype> qcur, Quantity<realtype> qtarg)->realtype {
+				return std::fabs((qcur-qtarg).data);
+			};
+			realtype temperature=t0;
+			realtype bestenergy=energy(qbest,q);
+			do {
+				Container<Quantity<realtype>> qnexts;
+				Container<realtype> nextprob;
+				for(int i = 0; i < patterns.size(); i++) {
+					for(auto& pat:patterns[i]) {
+						for(auto& is:constants[i]) {
+							qnexts.push_back(pat(qnew,is));
+						}
+					}
+				}
+				realtype curenergy=energy(qnew,q);
+				for(auto& is:qnexts) {
+					for(auto& ct:constants) {
+						ct.push_back(is);
+					}
+					realtype nextenergy=energy(is,q);
+					if(nextenergy-bestenergy<expecteps) {
+						qbest=is;
+						bestenergy=nextenergy;
+					}
+					realtype delta=nextenergy-curenergy;
+					if(std::fabs(delta)<=expecteps) nextprob.push_back(1.L);
+					else 		   		 			nextprob.push_back(std::exp(-delta/temperature));
 				}
 				realtype probsum=0;
 				for(auto& prob:nextprob) probsum+=prob;

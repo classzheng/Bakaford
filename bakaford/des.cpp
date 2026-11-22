@@ -8,7 +8,7 @@ int main() {  // VibeCoding
     const realtype e  = std::exp(1.0L);
     const realtype phi  = (std::sqrt(5)-1.L)*.5L;
 
-    Drofakab<realtype> solver(1);
+    Drofakab solver(1);
 
     // Candidate operations: add a constant, or multiply by a coefficient.
     solver.patterns[0].push_back(
@@ -57,7 +57,7 @@ int main() {  // VibeCoding
     const Quantity<realtype> target(1.14514L, "114.5");
     const Quantity<realtype> initial(e, "e", 1);
 
-    const auto result = solver.run(target, initial, 1.0L, 0.01L, 1e-6, 1);
+    const auto result = solver.ultrarun(target, initial, 1.0L, 0.01L, 1e-6, 1);
 
     std::cout << "Target: " << target.data << '\n'
               << "Result: " << result.data << '\n'
