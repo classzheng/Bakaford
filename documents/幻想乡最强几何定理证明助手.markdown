@@ -12,7 +12,7 @@
 
 例如圆周率\[\pi\], 自然底数\[e\] 都是超越数. 方便起见, 定义集合\[\mathsf{Tr}\]为一切超越数构成的集合, 并认为代数数 (即可以表示为某个整系数多项式方程根的数) 构成的集合为\[\overline{\mathsf{Tr}}\]. 不难证明对于任意\[\lambda,\mu\in\overline{\mathsf{Tr}};\ \nu\in\mathsf{Tr}\] , 满足\[\lambda\cdot\mu\in\overline{\mathsf{Tr}};\ \lambda\cdot\nu\in\mathsf{Tr}\]. 上文提到的\[\pi^n,\ n\in\mathbb Z^+\]当然也是超越数.  
 
-约定随机数的符号是\[\#\mathcal{Ran}_\mathbb F\]. 虽然说大多数科学计算库中提到的随机数生成是在实数域上的 (如 `std::uniform_real_distribution`), 但是受限于机器, 最终也只能转换为高精度浮点数, 所以本质上还是有限不循环的小数. 约定\[\lceil\cdot\rfloor_{\texttt{p}}:\ \mathbb R\to\mathbb F\]  表示对实数进行精度为p的截断近似值, Bakaford中取`p=1e-7`即\[10^{-7}\]. 为了方便表示, 定义浮点数构成的集合\[\mathbb F:=\{x:\exist n\in\mathbb Z.\ x\cdot10^n\in\mathbb Z\}\]也就是有限不循环小数.
+约定随机数的符号是\[\#\mathcal{Ran}_\mathbb F\]. 虽然说大多数科学计算库中提到的随机数生成是在实数域上的 (如 `std::uniform_real_distribution`), 但是受限于机器, 最终也只能转换为高精度浮点数, 所以本质上还是有限不循环的小数. 约定\[\lceil\cdot\rfloor_{\texttt{p}}:\ \mathbb R\to\mathbb F\]  表示对实数进行精度为p的截断近似值, Bakaford中取`p=1e-7`即\[10^{-7}\]. 为了方便表示, 定义浮点数构成的集合\[\mathbb F:=\{x:\exists n\in\mathbb Z.\ x\cdot10^n\in\mathbb Z\}\]也就是有限不循环小数.
 
 引入超越数系数的一个动机是, 生成的随机坐标可能在精度内近似满足某些线性关系, 而这些关系并不会且一般不会被设计者考虑到或被使用者体现在构图语句中. 此时, 生成的证明实际上有额外的条件, 或者说生成的证明不一定正确.于是有
 > 推测: 引入超越数系数的随机坐标之间不存在任何代数数范围内的线性关系.
@@ -23,7 +23,7 @@
 
 ### 1.1 超越数的定义  
 > $$
-> \textbf{Definition-1.1.1 }\text{一个数称为超越数, 如果它不是任何非零整系数多项式方程的解. }\\\text{i.e. }\forall P:\text{A polynomial function with integer coefficients},\\\exist x.\ P(x)\neq0.\quad P(\alpha)\neq0,\ \text{for }\alpha\in\mathsf{Tr}\qquad(*)
+> \textbf{Definition-1.1.1 }\text{一个数称为超越数, 如果它不是任何非零整系数多项式方程的解. }\\\text{i.e. }\forall P:\text{A polynomial function with integer coefficients},\\\exists x.\ P(x)\neq0.\quad P(\alpha)\neq0,\ \text{for }\alpha\in\mathsf{Tr}\qquad(*)
 > $$
 > 给出的等价定义 (*) 将在1.3的证明被用到.
 
@@ -81,6 +81,8 @@ $$
 
 定义线性相关谓词 \[\forall \mathbb X:\text{a set},\ \text{Seq}:\text{a sequence}.\ LinearDependent_\mathbb X(\text{Seq})\Leftrightarrow\neg LinearIndependent_\mathbb X(\text{Seq})\quad(\varepsilon)\]
 
+#### 1.4.1 尺规作图五大公法
+
 尺规作图五大公法分别是:
 
 - Ⅰ. 通过两个已知点可作一直线。 
@@ -89,45 +91,25 @@ $$
 - Ⅳ. 若已知直线和一已知圆相交，可求其交点。
 - Ⅴ. 若两已知圆相交，可求其交点。
 
-同时为了方便介绍, 引入部分质点几何记法. 简而言之, 在质点上定义有常规的运算, 并可以通过类如\[M=\frac{A+B}{2}\]表示M是线段AB的中点等经验写法表示另一个点. 这里为了更好理解不妨将点看成一个坐标, 然后质点运算就是对坐标的按位运算. 严格来说, 是将点当成点向量, 而质点运算是对点向量的运算.
+同时为了方便介绍, 引入部分质点几何记法. 简而言之, 在质点上定义有常规的运算, 并可以通过类如\[2M=A+B\]表示M是线段AB的中点等经验写法表示另一个点. 这里为了更好理解不妨将点看成一个坐标, 然后质点运算就是对坐标的按位运算. 严格来说, 是将点当成点向量, 而质点运算是对点向量的运算.
 
 ![图源GeoGebra](https://www.geogebra.org/resource/rsnnup2v/dzp1ir5GOpx0GYHt/material-rsnnup2v.png)  
 
-有简单的规则\[\tau_1,\ \tau_2\Rightarrow LinearDependent_\mathbb Q(\texttt{Geometric quantities})\]:   
-- 考虑平面上相异的点\[A,\ B\], 则直线\[AB\]上的点\[C\]可表示为\[C=t\cdot A+(1-t)B,\ t\in\mathbb Q\quad\Rightarrow\quad t\cdot A+(1-t)B-C=0.\qquad(\tau_1)\]
-- 考虑屏幕上任意一点\[O\], 在\[\odot O,\ \text{radius = }r\in\mathbb Q\]上的任意一点\[P\]都满足\[OP=r.\qquad(\tau_2)\]
+此时有
+- 考虑平面上相异的点\[A,\ B\], 则直线\[AB\]上的点\[C\]可表示为\[C=t\cdot A+(1-t)B,\ t\in\mathbb Q\quad\Rightarrow\quad t\cdot A+(1-t)B-C=0\>(\tau_1)\]  
+此时, \[A,\ B,\ C\]的坐标是线性相关的; 反之, 线性相关的一组点很容易证得是共线的.
+- 考虑平面上任意一点\[O\], 在\[\odot O,\ \text{radius = }r\in\mathbb Q\]上的任意点\[P, Q\]都满足\[OP+\left(-1\right)OQ=0\>(\tau_2).\]  
+此时, \[OP,\ OQ\]是线性相关的. 反之, 若\[OP,\ OQ\]是线性相关的, 则\[P,Q\]在半径不同的同心圆\[\odot O\]上; 特殊地, 满足式\[(\tau_2)\]时. \[P,Q\]在共圆于\[\odot O\]上.
 
+因为尺规作图时只需考虑 直线 和 圆 的关系, 因此对于公法Ⅲ-Ⅵ求得交点时各几何量均满足一定线性关系.
 
+#### 1.4.2 归结
 
-#### 1.4.1 通过两个已知点可作一直线  
-考虑平面上相异的点\[A,\ B\], 则对直线\[AB\]上的任意点\[C\]均可应用规则\[(\tau_1)\], 推得\[LinearDependent_\mathbb Q(\texttt{coordinates})\].
-
-注意此时在点\[C\]也和点\[A,B\]两两构成了线段\[AB;\ AC;\ BC\], 易知\[\exist\alpha_i\in\pm1.\ \alpha_1 AB+\alpha_2 BC+\alpha_3 AC=0\Rightarrow LinearDependent_\mathbb Q(\texttt{length})\].
-
-#### 1.4.2 已知圆心和半径可作一个圆  
-考虑平面上任意一点\[O\], 对在\[\odot O,\ \text{radius = }r\]上的任意一点\[P\]均可应用规则\[(\tau_2)\], 此时\[OP-r=0\Rightarrow LinearDependent_\mathbb Q(\texttt{length})\].
-
-#### 1.4.3 若两已知直线相交，可求其交点
-
-考虑平面上相异的点\[A,\ B,\ C,\ D\], 则对直线\[AB\], \[CD\]的交点\[P\]可作为\[AB\]上的点和\[CD\]上的点分别应用规则\[(\tau_1)\Rightarrow LinearDependent_\mathbb Q(\texttt{coordinates})\].
-
-#### 1.4.4 若已知直线和一已知圆相交，可求其交点
-
-考虑平面上相异的点\[A,\ B,\ O\], 则对直线\[AB\], \[\odot O\]的交点\[P\]可作为\[AB\]上的点和\[\odot O\]上的点分别应用规则\[(\tau_1),(\tau_2)\Rightarrow LinearDependent_\mathbb Q(\texttt{coordinates/length})\].
-
-#### 1.4.5 若两已知圆相交，可求其交点
-
-考虑平面上相异的点\[O_1,O_2\], 则对\[\odot O_1, \odot O_2\]的交点\[P\]可作为\[\odot O_1,\odot O_2\]上的点分别应用规则\[(\tau_2)\Rightarrow LinearDependent_\mathbb Q(\texttt{length})\].
-
-
-
-#### 1.4.6 归结
-
-以上, 证明了各几何量间存在线性关系是存在Euclidean几何基本关系的一个充要条件.
+证明了各几何量间存在线性关系是存在Euclidean几何基本关系的一个充要条件.
 $$
 \forall \mathrm{Seq_0}:\text{a sequence}.\ EuclideanRelation(\mathrm{Seq_0})\Leftrightarrow LinearDependent_\mathbb Q(\mathrm{Seq_0})\qquad(\varsigma)
 $$
-这里考虑有理数集\[\mathbb Q\]是因为计算机只能处理浮点数而\[\mathbb Q\supseteq\mathbb F\].
+这里用非常笼统的谓词\[EuclideanRelation,\ LinearDependent\]概括了这一关系. 具体来说, 不同的几何命题涉及的几何量也是不同的. 此时考虑有理数集\[\mathbb Q\]是因为计算机只能处理浮点数而\[\mathbb Q\supseteq\mathbb F\].
 
 ### 1.5 证明超越化随机坐标讨论情况的一般性
 
@@ -137,9 +119,9 @@ $$
 
 > HI 关联公理(从属公理) 基本关系为点属于直线.我们也沿用习惯用语, 例如点在直线上、直线经过点、 两点的连线、直线相支于一点等等. 
 >
-> ——《吴文俊全集》数学机械化卷IV
+>   -- 《吴文俊全集》数学机械化卷IV
 
-> incidence几何即仅考虑 Axiom HI (关联公理) 的几何系统, 例如Desargues定理.![Desargues Theor3m](https://pic1.zhimg.com/80/v2-cc7fb651e59545e9afa6bf974f506fc3_720w.png?source=ccfced1a)
+> incidence几何即仅考虑 Axiom HI (关联公理) 的几何系统, 例如Desargues定理就是incidence几何定理.![Desargues Theor3m](https://pic1.zhimg.com/80/v2-cc7fb651e59545e9afa6bf974f506fc3_720w.png?source=ccfced1a)
 
 这里因为坐标被乘以一个超越数系数而线性不相关了, 所以不可能存在\[\#\mathcal{Ran}_{\mathbb F\backslash\{0\}}\]生成随机坐标导致该情况存在隐含的incidence几何条件.
 
@@ -158,7 +140,7 @@ $$
 &\texttt{INTRO}\,A(\texttt{TrRand(1)},0)\\
 &\texttt{INTRO}\,B(0,\texttt{TrRand(2)})\\
 &\texttt{INTRO}\,\ell. A\in\ell,\,\ell\bot x\text{ axis}\\
-&\texttt{INTRO}\,f(x):=x^2,\ f:\R\to\R\\
+&\texttt{INTRO}\,f(x):=x^2,\ f:\mathbb R\to\mathbb R\\
 &\texttt{INTERSECTION}\,C\to f\cap \ell\\
 \end{aligned}
 $$
@@ -166,7 +148,7 @@ $$
 
 同理, 包含更高次数的三次函数曲线的命题, 也会出现这样的问题. 归根结底, 是因为这些幂函数图象上取的点\[(m,n)\]满足了\[\frac{n}{m}=\pi^t,\,t\in\mathbb Z\],而与后引入的点的坐标的系数相等, 此时两点的纵坐标满足线性关系. 解决这个问题是使用素数幂而非简单的自然数幂. 
 
-对于素数\[p\], 不存在整数因子\[m,n\]使得\[p=m\cdot n\]. 所以, 幂函数\[f(x):=x^a,\ a\in\mathbb Z\]上的点的纵坐标为\[\left(\mathtt{TrRand()}\cdot\pi^p\right)^a=\left(\mathtt{TrRand()}\right)^a\cdot\pi^{ap}\], 而新引入的点的坐标的系数为\[\pi^q,\ q:\text{a prime}\]. 如使二者相等, 则\[q=ap\], 因为\[q\]是素数, 所以这是不可能的.
+对于素数\[p\], 不存在整数因子\[m,n\]使得\[p=m\cdot n\]. 所以, 幂函数\[f(x):=x^a,\ a\in\mathbb Z\]上的点的纵坐标为\[\left(\mathtt{TrRand(\star)}\cdot\pi^p\right)^a=\left(\mathtt{TrRand(\star)}\right)^a\cdot\pi^{ap}\], 而新引入的点的坐标的系数为\[\pi^q,\ q:\text{a prime}\]. 如使二者相等, 则\[q=ap\], 因为\[q\]是素数, 所以这是不可能的.
 
 因此, 引入素数幂可以解决引入整数幂函数的命题带来的问题.
 
@@ -226,9 +208,9 @@ public: Quantity<Type> run(Quantity<Type> q, Quantity<Type> q0,
                            const unsigned maxepoch=0) {
 ```
 
-以上是\[\texttt{Bakaford::Drofakab::run}\], 用来递归退火求解方程. 每个epoch中求解的过程量都会被压入constants数组中作为新的常数项, 因此极其容易爆炸.
+以上是`Bakaford::Drofakab::run`, 用来递归退火求解方程. 每个epoch中求解的过程量都会被压入constants数组中作为新的常数项, 因此极其容易爆炸.
 
-`des.cpp`是我用[Github Copilot](https://www.github.com/copilot)辅助编写的简单程序, 可以用常数\[[\pi,e,9]\]拟合\[1.14514\].
+`des.cpp`是我用[Github Copilot](https://www.github.com/copilot)辅助编写的简单程序, 可以用常数\[[\pi,e,9,\phi]\]拟合\[1.14514\].
 
 D.E.S的能量函数设计为
 ```cpp
@@ -238,6 +220,18 @@ static std::function<realtype(Quantity<Type>,Quantity<Type>)> energy=[](Quantity
 ```
 
 也就是状态和目标状态的差的绝对值.
+
+```cpp
+for(int i = 0; i < patterns.size(); i++) {
+    for(auto& pat:patterns[i]) {
+        for(auto& is:constants[i]) {
+            qnexts.push_back(pat(qnew,is));
+        }
+    }
+}
+```
+
+然后, 调用`patterns`中的回调函数, 作为下一个状态\[S'\](即数组`qnexts`). 每次更新后, 备选的状态按照状态转移概率存入常数数组`constants`中, 使得下次退火时可以直接使用到过程状态以提高观赏性. `Bakaford::Drofakab::ultrarun`中不考虑状态转移概率直接存入`constants`, 观赏性更高但会降低计算效率.
 
 ### 2.3 Geometric D.E.S.
 
